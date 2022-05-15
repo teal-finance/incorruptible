@@ -1,9 +1,8 @@
 // Copyright (c) 2022 Teal.Finance contributors
+// Licensed under the EUPL either v1.2 or any later version, at the licensee's option.
+// SPDX-License-Identifier: EUPL-1.2+
+// See the LICENCE.md file or https://joinup.ec.europa.eu/page/eupl-text-11-12
 // This file is part of Teal.Finance/Incorruptible, a tiny cookie token.
-// SPDX-License-Identifier: LGPL-3.0-or-later
-// Teal.Finance/Incorruptible is free software under the GNU LGPL
-// either version 3 or any later version, at the licensee's option.
-// See the LICENSE file or <https://www.gnu.org/licenses/lgpl-3.0.html>
 
 package incorruptible
 
@@ -12,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/teal-finance/incorruptible/aead"
@@ -20,6 +20,8 @@ import (
 	// baseN "github.com/teal-finance/BaseXX/base92" // toggle package with same interface.
 	baseN "github.com/mtraver/base91"
 )
+
+type WriteHTTP func(w http.ResponseWriter, r *http.Request, statusCode int, values ...any)
 
 type Session struct {
 	writeErr WriteHTTP
@@ -194,4 +196,35 @@ func emptyCookie(name string, secure bool, dns, path string) http.Cookie {
 		Raw:        "",
 		Unparsed:   nil,
 	}
+}
+
+func defaultWriteJSON(w http.ResponseWriter, r *http.Request, statusCode int, values ...any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(statusCode)
+
+	if len(values) == 0 {
+		return
+	}
+	message, ok := values[0].(string)
+	if !ok {
+		return
+	}
+
+	b := make([]byte, 0, 300)
+	b = append(b, []byte(`{"error":`)...)
+	b = strconv.AppendQuote(b, message)
+
+	if r != nil {
+		b = append(b, []byte(",\n"+`"path":`)...)
+		b = strconv.AppendQuote(b, r.URL.Path)
+		if r.URL.RawQuery != "" {
+			b = append(b, []byte(",\n"+`"query":`)...)
+			b = strconv.AppendQuote(b, r.URL.RawQuery)
+		}
+	}
+
+	b = append(b, '}')
+	b = append(b, '\n')
+	_, _ = w.Write(b)
 }

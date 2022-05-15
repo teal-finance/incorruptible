@@ -1,9 +1,8 @@
 // Copyright (c) 2022 Teal.Finance contributors
+// Licensed under the EUPL either v1.2 or any later version, at the licensee's option.
+// SPDX-License-Identifier: EUPL-1.2+
+// See the LICENCE.md file or https://joinup.ec.europa.eu/page/eupl-text-11-12
 // This file is part of Teal.Finance/Incorruptible, a tiny cookie token.
-// SPDX-License-Identifier: LGPL-3.0-or-later
-// Teal.Finance/Incorruptible is free software under the GNU LGPL
-// either version 3 or any later version, at the licensee's option.
-// See the LICENSE file or <https://www.gnu.org/licenses/lgpl-3.0.html>
 
 // Package token represents the decoded form of a "session" token.
 package dtoken
