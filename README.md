@@ -87,14 +87,16 @@ or with an authentication server, you have to share the encryption key.
 In this last case, the Quid solution is to be preferred.
 Quid provides JWT that signature can be verified with a public key.
 
-## Contributions welcome
+## ✨ Contributions Welcome
 
-This new repo needs your help to become better.
+This new project needs your help to become better.
 Please propose your enhancements,
 or even a further refactoring.
-Any contribution is welcome. ;-)
 
-## Feedback
+We welcome contributions in many forms,
+and there's always plenty to do!
+
+## 🗣️ Feedback
 
 If you have some suggestions, or need a new feature,
 please contact us, using the
@@ -105,3 +107,45 @@ or at Teal.Finance[à]pm.me or
 Feel free to propose a
 [Pull Request](https://github.com/teal-finance/incorruptible/pulls),
 your contributions are welcome. :wink:
+
+## 🗽 European Union Public Licence
+
+Copyright (c) 2022 Teal.Finance contributors
+
+Licensed under the EUPL either v1.2 or
+any later version, at the licensee's option.
+
+SPDX-License-Identifier: EUPL-1.2+
+
+Teal.Finance/Garcon is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the [LICENCE.md](LICENCE.md) file alongside the source files
+or <https://joinup.ec.europa.eu/page/eupl-text-11-12>.
+
+The EUPL v1.2 (last version) was published in May 2017.
+Its revised documentation was issued in 2021.
+EUPL v1.2 is OSI and FSF certified.
+
+EUPL is officially translated into 23 official languages
+of the European Union. All linguistic versions have the same validity.
+
+EUPL is a strong copyleft licence developed with other copyleft licences in mind
+and specifically authorizes covered works to be re-released under the following licences:
+
+- GPL v2 v3 only
+- OSL v2.1 v3.0
+- Eclipse Public License v1.0 (considered weak copyleft by FSF)
+- CeCILL v2.0 & v2.1 (allowing re-licence to GPLv3-or-later)
+- MPL v2
+- LGPL v2.1 v3
+- LiLIQ-R & LiLIQ-R+
+- AGPL v3
+- ...
+
+See also:
+
+- <https://wikiless.org/wiki/European_Union_Public_Licence>
+- <https://joinup.ec.europa.eu/community/eupl/og_page/eupl-compatible-open-source-licences>
+- <https://joinup.ec.europa.eu/collection/eupl/solution/joinup-licensing-assistant/jla-find-and-compare-software-licenses>
