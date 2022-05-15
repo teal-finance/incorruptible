@@ -1,7 +1,14 @@
 # Incorruptible
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/teal-finance/BaseXX.svg "Go documentation for Incorruptible")](https://pkg.go.dev/github.com/teal-finance/incorruptible)
-Package incorruptible provides a safer, shorter, faster session cookie. ![logo](docs/incorruptible.png)
+The **Incorruptible** project provides a safer, shorter, faster
+[Bearer Token](https://www.rfc-editor.org/rfc/rfc6750.html)
+for session cookie and `Authorization` HTTP header. [![Go Reference](https://pkg.go.dev/badge/github.com/teal-finance/BaseXX.svg "Go documentation for Incorruptible")](https://pkg.go.dev/github.com/teal-finance/incorruptible)
+
+[Incorruptible](https://www.shakeitdrinkit.com/incorruptible-cocktail-1618.html)
+is also a [mocktail](https://wikiless.org/wiki/Mocktail)
+that the *Garçon* de café likes to serve to clients.
+
+![logo](docs/incorruptible.png)
 
 ## 🎯 Purpose
 
@@ -16,12 +23,18 @@ Package incorruptible provides a safer, shorter, faster session cookie. ![logo](
 
 ## 🍸 Name
 
-The incorruptible is a mocktail with lemonade, grapefruit and orange juice.
-(see <https://www.shakeitdrinkit.com/incorruptible-cocktail-1618.html>)
+The *Incorruptible* name originates from the
+[incorruptible](https://www.shakeitdrinkit.com/incorruptible-cocktail-1618.html)
+drink, a [mocktail](https://wikiless.org/wiki/Mocktail)
+with lemonade, grapefruit and orange juice.
 
-Incorruptible has been originally developped within the Garcon web/API server.
-Garcon in French (garçon) is the waiter serving drinks to clients.
-(see <https://github.com/teal-finance/garcon>)
+The Incorruptible token has been originally developed within the
+[Teal.Finance/Garcon](https://github.com/teal-finance/garcon)
+web/API server. In French, "Garcon" *(garçon)* is the waiter,
+that sometimes serves drinks to clients.
+
+We wanted a name of cocktail without alcohol, using one single word,
+and understandable in different languages.
 
 ## 🔐 Encryption
 
@@ -36,7 +49,7 @@ AES is faster (optimized instructions).
 Moreover, the Go crypto allows to configure
 AES in an easy and safe way.
 
-See also: <https://go.dev/blog/tls-cipher-suites>
+See also <https://go.dev/blog/tls-cipher-suites>.
 
 Therefore this package currently uses only AES-GCM.
 The key is 128 bits, because 256 bits is not yet relevant in 2022.
@@ -44,20 +57,17 @@ This may change in a future version… Please share your thoughts.
 
 ## 🍪 Session cookie
 
-The serialization uses a format invented for the occasion
-which is called "incorruptible"
-(a mocktail that Garçon de café likes to serve).
+The serialization uses a format designed for the occasion.
+The format is composed of:
 
-The format is:
-
-- MagicCode (1 byte)
+- Magic code (1 byte)
 - Radom (1 byte)
 - Presence bits (1 byte)
 - Expiry time (0 or 3 bytes)
 - Client IP (0, 4 or 16 bytes)
 - Custom values, up to 31 values (from 0 to 7900 bytes)
 
-See <https://pkg.go.dev/github.com/teal-finance/incorruptible/format>
+See also <https://pkg.go.dev/github.com/teal-finance/incorruptible/format>.
 
 When the token is too long, its payload is compressed with Snappy S2.
 
