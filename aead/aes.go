@@ -2,7 +2,7 @@
 // This file is part of Teal.Finance/incorruptible licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-// package aead provides Encrypt() and Decrypt() for
+// Package aead provides Encrypt() and Decrypt() for
 // AEAD (Authenticated Encryption with Associated Data).
 // see https://wikiless.org/wiki/Authenticated_encryption
 //
