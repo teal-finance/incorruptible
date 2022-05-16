@@ -1,8 +1,6 @@
 // Copyright (c) 2022 Teal.Finance contributors
-// Licensed under the EUPL either v1.2 or any later version, at the licensee's option.
-// SPDX-License-Identifier: EUPL-1.2+
-// See the LICENCE.md file or https://joinup.ec.europa.eu/page/eupl-text-11-12
-// This file is part of Teal.Finance/Incorruptible, a tiny cookie token.
+// This file is part of Teal.Finance/incorruptible licensed under the MIT License.
+// SPDX-License-Identifier: MIT
 
 // Package format serialize a DToken in a short way.
 // The format starts with a magic code (2 bytes),

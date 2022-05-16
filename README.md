@@ -1,12 +1,12 @@
-# Incorruptible
+# Incorruptible [![Go Reference](https://pkg.go.dev/badge/github.com/teal-finance/BaseXX.svg "Go documentation for Incorruptible")](https://pkg.go.dev/github.com/teal-finance/incorruptible)
 
 The **Incorruptible** project provides a safer, shorter, faster
 [Bearer Token](https://www.rfc-editor.org/rfc/rfc6750.html)
-for session cookie and `Authorization` HTTP header. [![Go Reference](https://pkg.go.dev/badge/github.com/teal-finance/BaseXX.svg "Go documentation for Incorruptible")](https://pkg.go.dev/github.com/teal-finance/incorruptible)
+for session cookie and `Authorization` HTTP header.
 
 [Incorruptible](https://www.shakeitdrinkit.com/incorruptible-cocktail-1618.html)
 is also a [mocktail](https://wikiless.org/wiki/Mocktail)
-that the *Garçon* de café likes to serve to clients.
+that the [*Garçon* de café](https://en.wiktionary.org/wiki/garçon_de_café) likes to serve to clients.
 
 ![logo](docs/incorruptible.png)
 
@@ -82,10 +82,10 @@ reducing/increasing the expiry precision.
 Then, the whole data bytes are encrypted with AES-GCM 128 bits.
 This adds 16 bytes of header, including the authentication.
 
-Finally, the ciphertext is Base91 encoded, adding some more bytes.
+Finally, the cipher-text is Base91 encoded, adding some more bytes.
 
 In the end, an "incorruptible" of 3 bytes (the minimum)
-becomes a Base91 of 22 bytes.
+becomes a Base91 of 24 bytes.
 
 ## 🚫 Limitations
 
@@ -118,44 +118,17 @@ Feel free to propose a
 [Pull Request](https://github.com/teal-finance/incorruptible/pulls),
 your contributions are welcome. :wink:
 
-## 🗽 European Union Public Licence
+## 🗽 Copyright and license
 
 Copyright (c) 2022 Teal.Finance contributors
 
-Licensed under the EUPL either v1.2 or
-any later version, at the licensee's option.
+Teal.Finance/incorruptible is free software, and can redistributed
+and/or modified under the terms of the MIT License.
+SPDX-License-Identifier: MIT
 
-SPDX-License-Identifier: EUPL-1.2+
-
-Teal.Finance/Garcon is distributed in the hope that it will be useful,
+Teal.Finance/incorruptible is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty
 of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-See the [LICENCE.md](LICENCE.md) file alongside the source files
-or <https://joinup.ec.europa.eu/page/eupl-text-11-12>.
-
-The EUPL v1.2 (last version) was published in May 2017.
-Its revised documentation was issued in 2021.
-EUPL v1.2 is OSI and FSF certified.
-
-EUPL is officially translated into 23 official languages
-of the European Union. All linguistic versions have the same validity.
-
-EUPL is a strong copyleft licence developed with other copyleft licences in mind
-and specifically authorizes covered works to be re-released under the following licences:
-
-- GPL v2 v3 only
-- OSL v2.1 v3.0
-- Eclipse Public License v1.0 (considered weak copyleft by FSF)
-- CeCILL v2.0 & v2.1 (allowing re-licence to GPLv3-or-later)
-- MPL v2
-- LGPL v2.1 v3
-- LiLIQ-R & LiLIQ-R+
-- AGPL v3
-- ...
-
-See also:
-
-- <https://wikiless.org/wiki/European_Union_Public_Licence>
-- <https://joinup.ec.europa.eu/community/eupl/og_page/eupl-compatible-open-source-licences>
-- <https://joinup.ec.europa.eu/collection/eupl/solution/joinup-licensing-assistant/jla-find-and-compare-software-licenses>
+See the [LICENSE](LICENSE) file (alongside the source files)
+or <https://opensource.org/licenses/MIT>.
