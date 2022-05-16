@@ -2,6 +2,8 @@
 // This file is part of Teal.Finance/incorruptible licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
+// Package incorruptible provides a safer, shorter, faster
+// secret token for session cookie and Authorization HTTP header.
 package incorruptible
 
 import (

@@ -12,11 +12,11 @@ that the [*Garçon* de café](https://en.wiktionary.org/wiki/garçon_de_café) l
 
 ## 🎯 Purpose
 
-- Safer because of random salt in the tokens
-  and understandable/auditable source code.
+- Safer because of random salt, expiration time
+  and client IP in the token.
 
 - Shorter because of Base91 (no Base64),
-  compression and index instead of key names.
+  compression and indexed-access instead of key names.
 
 - Faster because of AES (no RSA)
   and custom bar-metal serializer.
