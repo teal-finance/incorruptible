@@ -30,24 +30,24 @@ const (
 	doPrint = false
 )
 
-func (s *Session) Encode(dt dtoken.DToken) (string, error) {
+func (incorr *Incorruptible) Encode(dt dtoken.DToken) (string, error) {
 	printDT("Encode", dt, errors.New(""))
 
-	plaintext, err := format.Marshal(dt, s.magic)
+	plaintext, err := format.Marshal(dt, incorr.magic)
 	if err != nil {
 		return "", err
 	}
 	printBin("Encode plaintext", plaintext)
 
-	ciphertext := s.cipher.Encrypt(plaintext)
+	ciphertext := incorr.cipher.Encrypt(plaintext)
 	printBin("Encode ciphertext", ciphertext)
 
-	str := s.baseN.EncodeToString(ciphertext)
+	str := incorr.baseN.EncodeToString(ciphertext)
 	printStr("Encode BaseXX", str)
 	return str, nil
 }
 
-func (s *Session) Decode(str string) (dtoken.DToken, error) {
+func (incorr *Incorruptible) Decode(str string) (dtoken.DToken, error) {
 	printStr("Decode BaseXX", str)
 
 	var dt dtoken.DToken
@@ -55,7 +55,7 @@ func (s *Session) Decode(str string) (dtoken.DToken, error) {
 		return dt, fmt.Errorf("BaseXX string too short: %d < min=%d", len(str), base92MinSize)
 	}
 
-	ciphertext, err := s.baseN.DecodeString(str)
+	ciphertext, err := incorr.baseN.DecodeString(str)
 	if err != nil {
 		return dt, err
 	}
@@ -65,14 +65,14 @@ func (s *Session) Decode(str string) (dtoken.DToken, error) {
 		return dt, fmt.Errorf("ciphertext too short: %d < min=%d", len(ciphertext), ciphertextMinSize)
 	}
 
-	plaintext, err := s.cipher.Decrypt(ciphertext)
+	plaintext, err := incorr.cipher.Decrypt(ciphertext)
 	if err != nil {
 		return dt, err
 	}
 	printBin("Decode plaintext", plaintext)
 
 	magic := coding.MagicCode(plaintext)
-	if magic != s.magic {
+	if magic != incorr.magic {
 		return dt, errors.New("bad magic code")
 	}
 

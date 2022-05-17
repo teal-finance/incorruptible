@@ -18,16 +18,15 @@ import (
 // The token is searched the "session" cookie and in the first "Authorization" header.
 // The "session" cookie (that is added in the response) contains the "tiny" token.
 // Finally, Set stores the decoded token in the request context.
-func (s *Session) Set(next http.Handler) http.Handler {
+func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
 	log.Printf("Middleware SessionSet cookie %q %v setIP=%v",
-		s.cookie.Name, s.Expiry.Truncate(time.Second), s.SetIP)
+		incorr.cookie.Name, incorr.Expiry.Truncate(time.Second), incorr.SetIP)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		dt, err := s.DecodeToken(r)
+		dt, err := incorr.DecodeToken(r)
 		if err != nil {
-			printDebug("Set new token", err)
 			// no valid token found => set a new token
-			dt = s.SetCookie(w, r)
+			dt = incorr.SetCookie(w, r)
 		}
 		next.ServeHTTP(w, dt.PutInCtx(r))
 	})
@@ -38,18 +37,18 @@ func (s *Session) Set(next http.Handler) http.Handler {
 // See the Vet() function to also verify the "Authorization" header.
 // Chk also stores the decoded token in the request context.
 // In dev. testing, Chk accepts any request but does not store invalid tokens.
-func (s *Session) Chk(next http.Handler) http.Handler {
-	log.Printf("Middleware SessionChk cookie DevMode=%v", s.IsDev)
+func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
+	log.Printf("Middleware SessionChk cookie DevMode=%v", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		dt, err := s.DecodeCookieToken(r)
+		dt, err := incorr.DecodeCookieToken(r)
 		switch {
 		case err == nil: // OK: put the token in the request context
 			r = dt.PutInCtx(r)
-		case s.IsDev:
+		case incorr.IsDev:
 			printDebug("Chk DevMode no cookie", err)
 		default:
-			s.writeErr(w, r, http.StatusUnauthorized, err.Error())
+			incorr.writeErr(w, r, http.StatusUnauthorized, err)
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -60,92 +59,85 @@ func (s *Session) Chk(next http.Handler) http.Handler {
 // the "session" cookie or in the first "Authorization" header.
 // Vet also stores the decoded token in the request context.
 // In dev. testing, Vet accepts any request but does not store invalid tokens.
-func (s *Session) Vet(next http.Handler) http.Handler {
-	log.Printf("Middleware SessionVet cookie/bearer DevMode=%v", s.IsDev)
+func (incorr *Incorruptible) Vet(next http.Handler) http.Handler {
+	log.Printf("Middleware SessionVet cookie/bearer DevMode=%v", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		dt, err := s.DecodeToken(r)
+		dt, err := incorr.DecodeToken(r)
 		switch {
 		case err == nil:
 			r = dt.PutInCtx(r) // put the token in the request context
-		case s.IsDev:
-			printDebug("Vet DevMode no token", err)
-		default:
-			s.writeErr(w, r, http.StatusUnauthorized, err.Error())
+		case !incorr.IsDev:
+			incorr.writeErr(w, r, http.StatusUnauthorized, err...)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (s *Session) DecodeToken(r *http.Request) (dtoken.DToken, error) {
+func (incorr *Incorruptible) DecodeToken(r *http.Request) (dtoken.DToken, []any) {
 	var dt dtoken.DToken
 	var err [2]error
-	var i int
 
-	for i = 0; i < 2; i++ {
+	for i := 0; i < 2; i++ {
 		var base91 string
 		if i == 0 {
-			base91, err[0] = s.CookieToken(r)
+			base91, err[0] = incorr.CookieToken(r)
 		} else {
-			base91, err[1] = s.BearerToken(r)
+			base91, err[1] = incorr.BearerToken(r)
 		}
 		if err[i] != nil {
 			continue
 		}
-		if s.equalDefaultToken(base91) {
-			return s.dtoken, nil
+		if incorr.equalDefaultToken(base91) {
+			return incorr.dtoken, nil
 		}
-		if dt, err[i] = s.Decode(base91); err[i] != nil {
+		if dt, err[i] = incorr.Decode(base91); err[i] != nil {
 			continue
 		}
 		if err[i] = dt.Valid(r); err[i] != nil {
 			continue
 		}
-		break
+		return dt, nil
 	}
 
-	if i == 2 {
-		err[0] = fmt.Errorf("no valid 'incorruptible' token "+
-			"in either in the %q cookie or in the first "+
-			"'Authorization' HTTP header because: %w and %v",
-			s.cookie.Name, err[0], err[1].Error())
-		return dt, err[0]
-	}
-
-	return dt, nil
+	return dt, []any{
+		fmt.Errorf("missing or invalid 'incorruptible' token in either "+
+			"the '%s' cookie or the 1st 'Authorization' header", incorr.cookie.Name),
+		"error_cookie", err[0],
+		"error_bearer", err[1]}
 }
 
-func (s *Session) DecodeCookieToken(r *http.Request) (dt dtoken.DToken, err error) {
-	base91, err := s.CookieToken(r)
+func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (dt dtoken.DToken, err error) {
+	base91, err := incorr.CookieToken(r)
 	if err != nil {
 		return dt, err
 	}
-	if s.equalDefaultToken(base91) {
-		return s.dtoken, nil
+	if incorr.equalDefaultToken(base91) {
+		return incorr.dtoken, nil
 	}
-	if dt, err = s.Decode(base91); err != nil {
+	if dt, err = incorr.Decode(base91); err != nil {
 		return dt, err
 	}
 	return dt, dt.Valid(r)
 }
 
-func (s *Session) DecodeBearerToken(r *http.Request) (dt dtoken.DToken, err error) {
-	base91, err := s.BearerToken(r)
+func (incorr *Incorruptible) DecodeBearerToken(r *http.Request) (dt dtoken.DToken, err error) {
+	base91, err := incorr.BearerToken(r)
 	if err != nil {
 		return dt, err
 	}
-	if s.equalDefaultToken(base91) {
-		return s.dtoken, nil
+	if incorr.equalDefaultToken(base91) {
+		return incorr.dtoken, nil
 	}
-	if dt, err = s.Decode(base91); err != nil {
+	if dt, err = incorr.Decode(base91); err != nil {
 		return dt, err
 	}
 	return dt, dt.Valid(r)
 }
 
-func (s *Session) CookieToken(r *http.Request) (base91 string, err error) {
-	cookie, err := r.Cookie(s.cookie.Name)
+func (incorr *Incorruptible) CookieToken(r *http.Request) (base91 string, err error) {
+	cookie, err := r.Cookie(incorr.cookie.Name)
 	if err != nil {
 		return "", err
 	}
@@ -164,10 +156,10 @@ func (s *Session) CookieToken(r *http.Request) (base91 string, err error) {
 	return trimTokenScheme(cookie.Value)
 }
 
-func (s *Session) BearerToken(r *http.Request) (base91 string, err error) {
+func (incorr *Incorruptible) BearerToken(r *http.Request) (base91 string, err error) {
 	auth := r.Header.Get("Authorization")
 	if auth == "" {
-		return "", errors.New("no 'Authorization: " + secretTokenScheme + "xxxxxxxx' in the request header")
+		return "", errors.New("no 'Authorization: " + prefixScheme + "xxxxxxxx' in the request header")
 	}
 
 	return trimBearerScheme(auth)
@@ -175,9 +167,9 @@ func (s *Session) BearerToken(r *http.Request) (base91 string, err error) {
 
 // equalDefaultToken compares with the default token
 // by skiping the token scheme.
-func (s *Session) equalDefaultToken(base91 string) bool {
+func (incorr *Incorruptible) equalDefaultToken(base91 string) bool {
 	const n = len(secretTokenScheme)
-	return (base91 == s.cookie.Value[n:])
+	return (base91 == incorr.cookie.Value[n:])
 }
 
 func trimTokenScheme(uri string) (base91 string, err error) {

@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/teal-finance/incorruptible/aead"
@@ -19,13 +18,11 @@ import (
 	baseN "github.com/mtraver/base91"
 )
 
-type WriteHTTP func(w http.ResponseWriter, r *http.Request, statusCode int, values ...any)
-
-type Session struct {
+type Incorruptible struct {
 	writeErr WriteHTTP
 	Expiry   time.Duration
-	SetIP    bool          // if true => put the remote IP in the token
-	dtoken   dtoken.DToken // the "tiny" token
+	SetIP    bool          // If true => put the remote IP in the token.
+	dtoken   dtoken.DToken // dtoken is the "tiny" token.
 	cookie   http.Cookie
 	IsDev    bool
 	cipher   aead.Cipher
@@ -42,7 +39,7 @@ const (
 	// nsPerYear      = secondsPerYear * 1_000_000_000.
 )
 
-func New(urls []*url.URL, secretKey []byte, expiry time.Duration, setIP bool, writeErr WriteHTTP) *Session {
+func New(urls []*url.URL, secretKey []byte, expiry time.Duration, setIP bool, writeErr WriteHTTP) *Incorruptible {
 	if len(urls) == 0 {
 		log.Panic("No urls => Cannot set Cookie domain")
 	}
@@ -55,10 +52,10 @@ func New(urls []*url.URL, secretKey []byte, expiry time.Duration, setIP bool, wr
 	}
 
 	if writeErr == nil {
-		writeErr = defaultWriteJSON
+		writeErr = defaultWriteHTTP
 	}
 
-	s := Session{
+	incorr := Incorruptible{
 		writeErr: writeErr,
 		Expiry:   expiry,
 		SetIP:    setIP,
@@ -72,29 +69,29 @@ func New(urls []*url.URL, secretKey []byte, expiry time.Duration, setIP bool, wr
 	}
 
 	// serialize the "tiny" token (with encryption and Base91 encoding)
-	base91, err := s.Encode(s.dtoken)
+	base91, err := incorr.Encode(incorr.dtoken)
 	if err != nil {
 		log.Panic("Encode(emptyToken) ", err)
 	}
 
 	// insert this generated token in the cookie
-	s.cookie.Value = secretTokenScheme + base91
+	incorr.cookie.Value = secretTokenScheme + base91
 
-	return &s
+	return &incorr
 }
 
-func (s Session) NewCookie(dt dtoken.DToken) (http.Cookie, error) {
-	base91, err := s.Encode(dt)
+func (incorr Incorruptible) NewCookie(dt dtoken.DToken) (http.Cookie, error) {
+	base91, err := incorr.Encode(dt)
 	if err != nil {
-		return s.cookie, err
+		return incorr.cookie, err
 	}
 
-	cookie := s.NewCookieFromToken(base91, dt.ExpiryTime())
+	cookie := incorr.NewCookieFromToken(base91, dt.ExpiryTime())
 	return cookie, nil
 }
 
-func (s Session) NewCookieFromToken(base91 string, expiry time.Time) http.Cookie {
-	cookie := s.cookie
+func (incorr Incorruptible) NewCookieFromToken(base91 string, expiry time.Time) http.Cookie {
+	cookie := incorr.cookie
 	cookie.Value = secretTokenScheme + base91
 
 	if expiry.IsZero() {
@@ -106,27 +103,27 @@ func (s Session) NewCookieFromToken(base91 string, expiry time.Time) http.Cookie
 	return cookie
 }
 
-func (s Session) SetCookie(w http.ResponseWriter, r *http.Request) dtoken.DToken {
-	dt := s.dtoken     // copy the "tiny" token
-	cookie := s.cookie // copy the default cookie
+func (incorr Incorruptible) SetCookie(w http.ResponseWriter, r *http.Request) dtoken.DToken {
+	dt := incorr.dtoken     // copy the "tiny" token
+	cookie := incorr.cookie // copy the default cookie
 
-	if s.Expiry <= 0 {
+	if incorr.Expiry <= 0 {
 		cookie.Expires = time.Time{} // time.Now().Add(nsPerYear)
 	} else {
-		cookie.Expires = time.Now().Add(s.Expiry)
-		dt.SetExpiry(s.Expiry)
+		cookie.Expires = time.Now().Add(incorr.Expiry)
+		dt.SetExpiry(incorr.Expiry)
 	}
 
-	if s.SetIP {
+	if incorr.SetIP {
 		err := dt.SetRemoteIP(r)
 		if err != nil {
 			log.Panic(err)
 		}
 	}
 
-	requireNewEncoding := (s.Expiry > 0) || s.SetIP
+	requireNewEncoding := (incorr.Expiry > 0) || incorr.SetIP
 	if requireNewEncoding {
-		base91, err := s.Encode(dt)
+		base91, err := incorr.Encode(dt)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -194,35 +191,4 @@ func emptyCookie(name string, secure bool, dns, path string) http.Cookie {
 		Raw:        "",
 		Unparsed:   nil,
 	}
-}
-
-func defaultWriteJSON(w http.ResponseWriter, r *http.Request, statusCode int, values ...any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(statusCode)
-
-	if len(values) == 0 {
-		return
-	}
-	message, ok := values[0].(string)
-	if !ok {
-		return
-	}
-
-	b := make([]byte, 0, 300)
-	b = append(b, []byte(`{"error":`)...)
-	b = strconv.AppendQuote(b, message)
-
-	if r != nil {
-		b = append(b, []byte(",\n"+`"path":`)...)
-		b = strconv.AppendQuote(b, r.URL.Path)
-		if r.URL.RawQuery != "" {
-			b = append(b, []byte(",\n"+`"query":`)...)
-			b = strconv.AppendQuote(b, r.URL.RawQuery)
-		}
-	}
-
-	b = append(b, '}')
-	b = append(b, '\n')
-	_, _ = w.Write(b)
 }
