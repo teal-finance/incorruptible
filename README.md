@@ -55,7 +55,7 @@ Therefore this package currently uses only AES-GCM.
 The key is 128 bits, because 256 bits is not yet relevant in 2022.
 This may change in a future version… Please share your thoughts.
 
-## 🍪 Session cookie
+## 🍪 Token for Cookie and Authorization
 
 The serialization uses a format designed for the occasion.
 The format is composed of:
