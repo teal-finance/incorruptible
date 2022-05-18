@@ -87,7 +87,7 @@ func printStr(name, s string) {
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("Session%s len=%d %q", name, len(s), s[:n])
+		log.Printf("Incorr%s len=%d %q", name, len(s), s[:n])
 	}
 }
 
@@ -97,13 +97,13 @@ func printBin(name string, b []byte) {
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("Session%s len=%d cap=%d %x", name, len(b), cap(b), b[:n])
+		log.Printf("Incorr%s len=%d cap=%d %x", name, len(b), cap(b), b[:n])
 	}
 }
 
 func printDT(name string, dt dtoken.DToken, err error) {
 	if doPrint {
-		log.Printf("Session%s dt %v %v n=%d err=%s", name,
+		log.Printf("Incorr%s dt %v %v n=%d err=%s", name,
 			time.Unix(dt.Expiry, 0), dt.IP, len(dt.Values), err)
 	}
 }

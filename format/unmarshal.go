@@ -103,6 +103,6 @@ func dropPadding(b []byte) ([]byte, error) {
 
 func printDebug(name string, b []byte) {
 	if doPrint {
-		log.Printf("Session%s len=%d", name, len(b))
+		log.Printf("Incorr%s len=%d", name, len(b))
 	}
 }

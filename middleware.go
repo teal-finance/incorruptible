@@ -196,6 +196,6 @@ func trimBearerScheme(auth string) (base91 string, err error) {
 
 func printDebug(str string, err error) {
 	if doPrint {
-		log.Printf("Session%s: %v", str, err)
+		log.Printf("Incorr%s: %v", str, err)
 	}
 }

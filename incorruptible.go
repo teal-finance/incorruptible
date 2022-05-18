@@ -163,12 +163,12 @@ func isLocalhost(urls []*url.URL) bool {
 	if len(urls) > 0 && urls[0].Scheme == "http" {
 		host, _, _ := net.SplitHostPort(urls[0].Host)
 		if host == "localhost" {
-			log.Print("Session in DevMode accepts missing/invalid token ", urls[0])
+			log.Print("Incorr in DevMode accepts missing/invalid token ", urls[0])
 			return true
 		}
 	}
 
-	log.Print("Session in ProdMode requires valid token because no http://localhost in first of ", urls)
+	log.Print("Incorr in ProdMode requires valid token because no http://localhost in first of ", urls)
 	return false
 }
 
