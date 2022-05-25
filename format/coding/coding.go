@@ -7,8 +7,9 @@ package coding
 
 import (
 	"fmt"
-	"math/rand"
 	"net"
+
+	rand "github.com/zhangyunhao116/fastrand"
 )
 
 const (

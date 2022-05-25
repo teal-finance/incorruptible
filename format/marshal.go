@@ -11,12 +11,12 @@ package format
 import (
 	"fmt"
 	"log"
-	"math/rand"
-
-	"github.com/klauspost/compress/s2"
 
 	"github.com/teal-finance/incorruptible/dtoken"
 	"github.com/teal-finance/incorruptible/format/coding"
+
+	"github.com/klauspost/compress/s2"
+	rand "github.com/zhangyunhao116/fastrand"
 )
 
 const (

@@ -34,9 +34,9 @@ package aead
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
-	"io"
 	"log"
+
+	rand "github.com/zhangyunhao116/fastrand"
 )
 
 type Cipher struct {
@@ -65,7 +65,7 @@ func New(secretKey []byte) (Cipher, error) {
 	// Never use more than 2^32 random nonces with a given key
 	// because of the risk of a repeat (birthday attack).
 	c.nonce = make([]byte, c.gcm.NonceSize())
-	_, err = io.ReadFull(rand.Reader, c.nonce)
+	_, err = rand.Read(c.nonce)
 
 	return c, err
 }
