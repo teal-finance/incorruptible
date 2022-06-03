@@ -1,4 +1,4 @@
-# Incorruptible [![Go Reference](https://pkg.go.dev/badge/github.com/teal-finance/BaseXX.svg "Go documentation for Incorruptible")](https://pkg.go.dev/github.com/teal-finance/incorruptible) [![Go Report Card](https://goreportcard.com/badge/github.com/teal-finance/incorruptible)](https://goreportcard.com/report/github.com/teal-finance/incorruptible)
+# Incorruptible [![Go Reference](https://pkg.go.dev/badge/github.com/teal-finance/incorruptible.svg "Go documentation for Incorruptible")](https://pkg.go.dev/github.com/teal-finance/incorruptible) [![Go Report Card](https://goreportcard.com/badge/github.com/teal-finance/incorruptible)](https://goreportcard.com/report/github.com/teal-finance/incorruptible)
 
 The **Incorruptible** project provides a safer, shorter, faster
 [Bearer Token](https://www.rfc-editor.org/rfc/rfc6750.html)
