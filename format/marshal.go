@@ -36,7 +36,9 @@ type Serializer struct {
 	compressed   bool
 }
 
-func newSerializer(dt dtoken.DToken) (s Serializer) {
+func newSerializer(dt dtoken.DToken) Serializer {
+	var s Serializer
+
 	s.ipLength = len(dt.IP) // can be 0, 4 or 16
 
 	s.nValues = len(dt.Values)
@@ -61,7 +63,7 @@ func doesCompress(payloadSize int) bool {
 	case payloadSize < sizeMayCompress:
 		return false
 	case payloadSize < sizeMustCompress:
-		return (0 == rand.Intn(1))
+		return (rand.Intn(1) == 0)
 	default:
 		return true
 	}

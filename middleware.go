@@ -105,38 +105,42 @@ func (incorr *Incorruptible) DecodeToken(r *http.Request) (dtoken.DToken, []any)
 		fmt.Errorf("missing or invalid 'incorruptible' token in either "+
 			"the '%s' cookie or the 1st 'Authorization' header", incorr.cookie.Name),
 		"error_cookie", err[0],
-		"error_bearer", err[1]}
+		"error_bearer", err[1],
+	}
 }
 
-func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (dt dtoken.DToken, err error) {
+func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (dtoken.DToken, error) {
 	base91, err := incorr.CookieToken(r)
 	if err != nil {
-		return dt, err
+		return dtoken.DToken{}, err
 	}
 	if incorr.equalDefaultToken(base91) {
 		return incorr.dtoken, nil
 	}
-	if dt, err = incorr.Decode(base91); err != nil {
-		return dt, err
-	}
-	return dt, dt.Valid(r)
-}
-
-func (incorr *Incorruptible) DecodeBearerToken(r *http.Request) (dt dtoken.DToken, err error) {
-	base91, err := incorr.BearerToken(r)
+	dt, err := incorr.Decode(base91)
 	if err != nil {
 		return dt, err
 	}
+	return dt, dt.Valid(r)
+}
+
+func (incorr *Incorruptible) DecodeBearerToken(r *http.Request) (dtoken.DToken, error) {
+	base91, err := incorr.BearerToken(r)
+	if err != nil {
+		return dtoken.DToken{}, err
+	}
 	if incorr.equalDefaultToken(base91) {
 		return incorr.dtoken, nil
 	}
-	if dt, err = incorr.Decode(base91); err != nil {
+	dt, err := incorr.Decode(base91)
+	if err != nil {
 		return dt, err
 	}
 	return dt, dt.Valid(r)
 }
 
-func (incorr *Incorruptible) CookieToken(r *http.Request) (base91 string, err error) {
+// CookieToken returns the token (in base91 format) from the cookie.
+func (incorr *Incorruptible) CookieToken(r *http.Request) (string, error) {
 	cookie, err := r.Cookie(incorr.cookie.Name)
 	if err != nil {
 		return "", err
@@ -156,7 +160,8 @@ func (incorr *Incorruptible) CookieToken(r *http.Request) (base91 string, err er
 	return trimTokenScheme(cookie.Value)
 }
 
-func (incorr *Incorruptible) BearerToken(r *http.Request) (base91 string, err error) {
+// BearerToken returns the token (in base91 format) from the HTTP Authorization header.
+func (incorr *Incorruptible) BearerToken(r *http.Request) (string, error) {
 	auth := r.Header.Get("Authorization")
 	if auth == "" {
 		return "", errors.New("no 'Authorization: " + prefixScheme + "xxxxxxxx' in the request header")
@@ -166,32 +171,34 @@ func (incorr *Incorruptible) BearerToken(r *http.Request) (base91 string, err er
 }
 
 // equalDefaultToken compares with the default token
-// by skiping the token scheme.
+// by skipping the token scheme.
 func (incorr *Incorruptible) equalDefaultToken(base91 string) bool {
 	const n = len(secretTokenScheme)
 	return (base91 == incorr.cookie.Value[n:])
 }
 
-func trimTokenScheme(uri string) (base91 string, err error) {
-	const n = len(secretTokenScheme)
-	if len(uri) < n+base92MinSize {
-		return "", fmt.Errorf("token URI too short (%d bytes) want %d", len(uri), n+base92MinSize)
+func trimTokenScheme(uri string) (string, error) {
+	const schemeSize = len(secretTokenScheme)
+	if len(uri) < schemeSize+base92MinSize {
+		return "", fmt.Errorf("token URI too short (%d bytes) want %d", len(uri), schemeSize+base92MinSize)
 	}
-	if uri[:n] != secretTokenScheme {
+	if uri[:schemeSize] != secretTokenScheme {
 		return "", fmt.Errorf("want token URI '"+secretTokenScheme+"xxxxxxxx' got %q", uri)
 	}
-	return uri[n:], nil
+	tokenBase91 := uri[schemeSize:]
+	return tokenBase91, nil
 }
 
-func trimBearerScheme(auth string) (base91 string, err error) {
-	const n = len(prefixScheme)
-	if len(auth) < n+base92MinSize {
-		return "", fmt.Errorf("bearer too short (%d bytes) want %d", len(auth), n+base92MinSize)
+func trimBearerScheme(auth string) (string, error) {
+	const prefixSize = len(prefixScheme)
+	if len(auth) < prefixSize+base92MinSize {
+		return "", fmt.Errorf("bearer too short (%d bytes) want %d", len(auth), prefixSize+base92MinSize)
 	}
-	if auth[:n] != prefixScheme {
+	if auth[:prefixSize] != prefixScheme {
 		return "", fmt.Errorf("want '"+prefixScheme+"xxxxxxxx' got %s", auth)
 	}
-	return auth[n:], nil
+	tokenBase91 := auth[prefixSize:]
+	return tokenBase91, nil
 }
 
 func printDebug(str string, err error) {

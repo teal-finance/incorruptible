@@ -73,13 +73,13 @@ func New(secretKey []byte) (Cipher, error) {
 // Encrypt encrypts data using 256-bit AES-GCM.  This both hides the content of
 // the data and provides a check that it hasn't been altered. Output takes the
 // form nonce|ciphertext|tag where '|' indicates concatenation.
-func (c *Cipher) Encrypt(plaintext []byte) (ciphertext []byte) {
+func (c *Cipher) Encrypt(plaintext []byte) []byte {
 	return c.gcm.Seal(nil, c.nonce, plaintext, nil)
 }
 
 // Decrypt decrypts data using 256-bit AES-GCM.  This both hides the content of
 // the data and provides a check that it hasn't been altered. Expects input
 // form nonce|ciphertext|tag where '|' indicates concatenation.
-func (c *Cipher) Decrypt(ciphertext []byte) (plaintext []byte, err error) {
+func (c *Cipher) Decrypt(ciphertext []byte) ([]byte, error) {
 	return c.gcm.Open(nil, c.nonce, ciphertext, nil)
 }
