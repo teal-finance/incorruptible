@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	enablePadding  = false
+	EnablePadding  = false
 	paddingStep    = 8
 	paddingMaxSize = 3 * paddingStep // result must be less than 256 bytes
 
@@ -92,7 +92,7 @@ func Marshal(dt dtoken.DToken, magic uint8) ([]byte, error) {
 		b = b[:coding.HeaderSize+n]
 	}
 
-	if enablePadding {
+	if EnablePadding {
 		b = s.appendPadding(b)
 	}
 
@@ -103,7 +103,7 @@ func (s Serializer) allocateBuffer() []byte {
 	length := coding.HeaderSize + coding.ExpirySize
 	capacity := length + s.ipLength + s.valTotalSize
 
-	if enablePadding {
+	if EnablePadding {
 		capacity += paddingMaxSize
 	}
 
