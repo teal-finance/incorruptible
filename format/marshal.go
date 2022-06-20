@@ -130,25 +130,25 @@ func (s Serializer) putHeaderExpiryIP(magic uint8, dt dtoken.DToken) ([]byte, er
 	return b, nil
 }
 
-func (s Serializer) appendValues(b []byte, dt dtoken.DToken) ([]byte, error) {
+func (s Serializer) appendValues(buf []byte, dt dtoken.DToken) ([]byte, error) {
 	for _, v := range dt.Values {
 		if len(v) > 255 {
 			return nil, fmt.Errorf("too large %d > 255", v)
 		}
-		b = append(b, uint8(len(v)))
-		b = append(b, v...)
+		buf = append(buf, uint8(len(v)))
+		buf = append(buf, v...)
 	}
-	return b, nil
+	return buf, nil
 }
 
 // appendPadding adds random padding bytes.
-func (s *Serializer) appendPadding(b []byte) []byte {
-	trailing := len(b) % paddingStep
+func (s *Serializer) appendPadding(buf []byte) []byte {
+	trailing := len(buf) % paddingStep
 	missing := paddingStep - trailing
 	missing += paddingStep * rand.Intn(paddingMaxSize/paddingStep-1)
 
 	for i := 1; i < missing; i++ {
-		b = append(b, uint8(rand.Intn(256)))
+		buf = append(buf, uint8(rand.Intn(256)))
 	}
 
 	if missing > 255 {
@@ -156,7 +156,7 @@ func (s *Serializer) appendPadding(b []byte) []byte {
 	}
 
 	// last byte is the padding length
-	b = append(b, uint8(missing))
+	buf = append(buf, uint8(missing))
 
-	return b
+	return buf
 }

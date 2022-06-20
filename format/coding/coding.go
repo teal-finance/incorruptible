@@ -27,32 +27,32 @@ const (
 	MaxValues int = maskNValues
 )
 
-func MagicCode(b []byte) uint8 {
-	return b[0]
+func MagicCode(buf []byte) uint8 {
+	return buf[0]
 }
 
 type Metadata byte
 
-func GetMetadata(b []byte) Metadata {
-	return Metadata(b[2])
+func GetMetadata(buf []byte) Metadata {
+	return Metadata(buf[2])
 }
 
 func NewMetadata(ipLength int, compressed bool, nValues int) (Metadata, error) {
-	var m byte
+	var meta byte
 
 	switch ipLength {
 	case 0:
-		m = 0
+		meta = 0
 	case 4:
-		m = maskIP | maskIPv4
+		meta = maskIP | maskIPv4
 	case 16:
-		m = maskIP
+		meta = maskIP
 	default:
 		return 0, fmt.Errorf("unexpected IP length %d", ipLength)
 	}
 
 	if compressed {
-		m |= maskCompress
+		meta |= maskCompress
 	}
 
 	if nValues < 0 {
@@ -62,67 +62,67 @@ func NewMetadata(ipLength int, compressed bool, nValues int) (Metadata, error) {
 		return 0, fmt.Errorf("too much values %d > %d", nValues, MaxValues)
 	}
 
-	m |= uint8(nValues)
+	meta |= uint8(nValues)
 
-	return Metadata(m), nil
+	return Metadata(meta), nil
 }
 
-func (m Metadata) PayloadMinSize() int {
-	return ExpirySize + m.ipLength() + m.NValues()
+func (meta Metadata) PayloadMinSize() int {
+	return ExpirySize + meta.ipLength() + meta.NValues()
 }
 
 // putHeader fills the magic code, the salt and the metadata.
-func (m Metadata) PutHeader(b []byte, magic uint8) {
-	b[0] = magic
-	b[1] = byte(rand.Intn(256)) // random salt
-	b[2] = byte(m)
+func (meta Metadata) PutHeader(buf []byte, magic uint8) {
+	buf[0] = magic
+	buf[1] = byte(rand.Intn(256)) // random salt
+	buf[2] = byte(meta)
 }
 
-func (m Metadata) ipLength() int {
-	if (m & maskIPv4) != 0 {
+func (meta Metadata) ipLength() int {
+	if (meta & maskIPv4) != 0 {
 		return net.IPv4len
 	}
-	if (m & maskIP) != 0 {
+	if (meta & maskIP) != 0 {
 		return net.IPv6len
 	}
 	return 0
 }
 
-func (m Metadata) IsCompressed() bool {
-	c := m & maskCompress
+func (meta Metadata) IsCompressed() bool {
+	c := meta & maskCompress
 	return c != 0
 }
 
-func (m Metadata) NValues() int {
-	n := m & maskNValues
+func (meta Metadata) NValues() int {
+	n := meta & maskNValues
 	return int(n)
 }
 
-func PutExpiry(b []byte, unix int64) error {
+func PutExpiry(buf []byte, unix int64) error {
 	internal, err := unixToInternalExpiry(unix)
 	if err != nil {
 		return err
 	}
 
-	putInternalExpiry(b, internal)
+	putInternalExpiry(buf, internal)
 
 	return nil
 }
 
-func DecodeExpiry(b []byte) ([]byte, int64) {
-	internal := internalExpiry(b)
+func DecodeExpiry(buf []byte) ([]byte, int64) {
+	internal := internalExpiry(buf)
 	unix := internalExpiryToUnix(internal)
-	return b[ExpirySize:], unix
+	return buf[ExpirySize:], unix
 }
 
-func AppendIP(b []byte, ip net.IP) []byte {
-	return append(b, ip...)
+func AppendIP(buf []byte, ip net.IP) []byte {
+	return append(buf, ip...)
 }
 
-func (m Metadata) DecodeIP(b []byte) ([]byte, net.IP) {
-	n := m.ipLength()
-	ip := b[:n]
-	return b[n:], ip
+func (meta Metadata) DecodeIP(buf []byte) ([]byte, net.IP) {
+	n := meta.ipLength()
+	ip := buf[:n]
+	return buf[n:], ip
 }
 
 func Uint64ToBytes(v uint64) []byte {
@@ -148,34 +148,34 @@ func Uint64ToBytes(v uint64) []byte {
 	}
 }
 
-func BytesToUint64(b []byte) (uint64, error) {
-	var r uint64
-	switch len(b) {
+func BytesToUint64(buf []byte) (uint64, error) {
+	var ret uint64
+	switch len(buf) {
 	default:
-		return 0, fmt.Errorf("too much bytes (length=%d) to extract an Uint64 (4 bytes)", len(b))
+		return 0, fmt.Errorf("too much bytes (length=%d) to extract an Uint64 (4 bytes)", len(buf))
 	case 8:
-		r |= uint64(b[7]) << 56
+		ret |= uint64(buf[7]) << 56
 		fallthrough
 	case 7:
-		r |= uint64(b[6]) << 48
+		ret |= uint64(buf[6]) << 48
 		fallthrough
 	case 6:
-		r |= uint64(b[5]) << 40
+		ret |= uint64(buf[5]) << 40
 		fallthrough
 	case 5:
-		r |= uint64(b[4]) << 32
+		ret |= uint64(buf[4]) << 32
 		fallthrough
 	case 4:
-		r |= uint64(b[3]) << 24
+		ret |= uint64(buf[3]) << 24
 		fallthrough
 	case 3:
-		r |= uint64(b[2]) << 16
+		ret |= uint64(buf[2]) << 16
 		fallthrough
 	case 2:
-		r |= uint64(b[1]) << 8
+		ret |= uint64(buf[1]) << 8
 		fallthrough
 	case 1:
-		return r | uint64(b[0]), nil
+		return ret | uint64(buf[0]), nil
 	case 0:
 		return 0, nil
 	}

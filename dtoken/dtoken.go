@@ -51,7 +51,6 @@ func (dt DToken) Valid(r *http.Request) error {
 		return fmt.Errorf("expired or malformed or date in the far future: %ds %v",
 			dt.Expiry, time.Unix(dt.Expiry, 0))
 	}
-
 	return dt.ValidIP(r)
 }
 
@@ -120,12 +119,12 @@ func (dt *DToken) SetBool(i int, value bool) error {
 		return err
 	}
 
-	var b []byte // false --> length=0
+	var buf []byte // false --> length=0
 	if value {
-		b = []byte{0} // true --> length=1
+		buf = []byte{0} // true --> length=1
 	}
 
-	dt.set(i, b)
+	dt.set(i, buf)
 	return nil
 }
 
@@ -172,9 +171,9 @@ func (dt DToken) check(i int) error {
 	return nil
 }
 
-func (dt *DToken) set(i int, b []byte) {
+func (dt *DToken) set(i int, buf []byte) {
 	if i == len(dt.Values) {
-		dt.Values = append(dt.Values, b)
+		dt.Values = append(dt.Values, buf)
 		return
 	}
 
@@ -188,12 +187,12 @@ func (dt *DToken) set(i int, b []byte) {
 		dt.Values = dt.Values[:i+1]
 	}
 
-	dt.Values[i] = b
+	dt.Values[i] = buf
 }
 
 // --------------------------------------
 // Manage token in request context.
-var tokenKey struct{}
+var tokenKey struct{} //nolint:gochecknoglobals // Need to be the same variable to access context value.
 
 // PutInCtx stores the decoded token in the request context.
 func (dt DToken) PutInCtx(r *http.Request) *http.Request {

@@ -91,13 +91,13 @@ func printStr(name, s string) {
 	}
 }
 
-func printBin(name string, b []byte) {
+func printBin(name string, buf []byte) {
 	if doPrint {
-		n := len(b)
+		n := len(buf)
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("Incorr%s len=%d cap=%d %x", name, len(b), cap(b), b[:n])
+		log.Printf("Incorr%s len=%d cap=%d %x", name, len(buf), cap(buf), buf[:n])
 	}
 }
 
