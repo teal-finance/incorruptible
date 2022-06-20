@@ -134,7 +134,12 @@ func (incorr *Incorruptible) SetCookie(w http.ResponseWriter, r *http.Request) d
 	return dt
 }
 
-// Supported URL shemes.
+// Cookie returns the internal cookie (for test purpose).
+func (incorr *Incorruptible) Cookie(int) *http.Cookie {
+	return &incorr.cookie
+}
+
+// URL schemes.
 const (
 	HTTP  = "http"
 	HTTPS = "https"
