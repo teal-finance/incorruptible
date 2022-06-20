@@ -2,7 +2,7 @@
 // This file is part of Teal.Finance/incorruptible licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-package incorruptible
+package incorruptible_test
 
 import (
 	"net"
@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/teal-finance/incorruptible"
 	"github.com/teal-finance/incorruptible/dtoken"
 	"github.com/teal-finance/incorruptible/format/coding"
 )
@@ -123,7 +124,11 @@ var cases = []struct {
 }
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
+
 	for _, c := range cases {
+		c := c
+
 		u, err := url.Parse("http://host:8080/path/url")
 		if err != nil {
 			t.Error("url.Parse() error", err)
@@ -132,9 +137,11 @@ func TestDecode(t *testing.T) {
 
 		key := [16]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6}
 
-		s := New([]*url.URL{u}, key[:], 0, true, nil)
+		s := incorruptible.New([]*url.URL{u}, key[:], 0, true, nil)
 
 		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+
 			c.dtoken.ShortenIP()
 
 			str, err := s.Encode(c.dtoken)

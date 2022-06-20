@@ -2,7 +2,7 @@
 // This file is part of Teal.Finance/incorruptible licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-package format
+package format_test
 
 import (
 	"net"
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/teal-finance/incorruptible/dtoken"
+	"github.com/teal-finance/incorruptible/format"
 	"github.com/teal-finance/incorruptible/format/coding"
 )
 
@@ -120,23 +121,93 @@ var cases = []struct {
 		dtoken.DToken{
 			Expiry: expiry,
 			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-			Values: [][]byte{{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, //nolint:gofumpt
-				{10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19},
-				{20}, {21}, {22}, {23}, {24}, {25}, {26}, {27}, {28}, {29},
-				{30}, {31}, {32}, {33}, {34}, {35}, {36}, {37}, {38}, {39},
-				{40}, {41}, {42}, {43}, {44}, {45}, {46}, {47}, {48}, {49},
-				{50}, {51}, {52}, {53}, {54}, {55}, {56}, {57}, {58}, {59},
-				{60}, {61}, {62}, {63}, {64}, {65}, {66}, {67}, {68}, {69}},
+			Values: [][]byte{
+				{1},
+				{2},
+				{3},
+				{4},
+				{5},
+				{6},
+				{7},
+				{8},
+				{9},
+				{10},
+				{11},
+				{12},
+				{13},
+				{14},
+				{15},
+				{16},
+				{17},
+				{18},
+				{19},
+				{20},
+				{21},
+				{22},
+				{23},
+				{24},
+				{25},
+				{26},
+				{27},
+				{28},
+				{29},
+				{30},
+				{31},
+				{32},
+				{33},
+				{34},
+				{35},
+				{36},
+				{37},
+				{38},
+				{39},
+				{40},
+				{41},
+				{42},
+				{43},
+				{44},
+				{45},
+				{46},
+				{47},
+				{48},
+				{49},
+				{50},
+				{51},
+				{52},
+				{53},
+				{54},
+				{55},
+				{56},
+				{57},
+				{58},
+				{59},
+				{60},
+				{61},
+				{62},
+				{63},
+				{64},
+				{65},
+				{66},
+				{67},
+				{68},
+				{69},
+			},
 		},
 	},
 }
 
 func TestUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	for _, c := range cases {
+		c := c
+
 		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+
 			c.dtoken.ShortenIP()
 
-			b, err := Marshal(c.dtoken, c.magic)
+			b, err := format.Marshal(c.dtoken, c.magic)
 			if (err == nil) == c.wantErr {
 				t.Errorf("Marshal() error = %v, wantErr %v", err, c.wantErr)
 				return
@@ -159,12 +230,12 @@ func TestUnmarshal(t *testing.T) {
 				return
 			}
 
-			if enablePadding && ((len(b) % 4) != 0) {
+			if format.EnablePadding && ((len(b) % 4) != 0) {
 				t.Errorf("len(b) %d must be 32-bit aligned but gap =%d", len(b), len(b)%4)
 				return
 			}
 
-			got, err := Unmarshal(b)
+			got, err := format.Unmarshal(b)
 			if err != nil {
 				t.Errorf("Unmarshal() error = %v", err)
 				return
