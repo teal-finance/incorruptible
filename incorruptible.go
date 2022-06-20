@@ -80,7 +80,7 @@ func New(urls []*url.URL, secretKey []byte, expiry time.Duration, setIP bool, wr
 	return &incorr
 }
 
-func (incorr Incorruptible) NewCookie(dt dtoken.DToken) (http.Cookie, error) {
+func (incorr *Incorruptible) NewCookie(dt dtoken.DToken) (http.Cookie, error) {
 	base91, err := incorr.Encode(dt)
 	if err != nil {
 		return incorr.cookie, err
@@ -90,7 +90,7 @@ func (incorr Incorruptible) NewCookie(dt dtoken.DToken) (http.Cookie, error) {
 	return cookie, nil
 }
 
-func (incorr Incorruptible) NewCookieFromToken(base91 string, expiry time.Time) http.Cookie {
+func (incorr *Incorruptible) NewCookieFromToken(base91 string, expiry time.Time) http.Cookie {
 	cookie := incorr.cookie
 	cookie.Value = secretTokenScheme + base91
 
@@ -103,7 +103,7 @@ func (incorr Incorruptible) NewCookieFromToken(base91 string, expiry time.Time) 
 	return cookie
 }
 
-func (incorr Incorruptible) SetCookie(w http.ResponseWriter, r *http.Request) dtoken.DToken {
+func (incorr *Incorruptible) SetCookie(w http.ResponseWriter, r *http.Request) dtoken.DToken {
 	dt := incorr.dtoken     // copy the "tiny" token
 	cookie := incorr.cookie // copy the default cookie
 
