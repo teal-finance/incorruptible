@@ -145,23 +145,23 @@ const (
 	HTTPS = "https"
 )
 
-func extractMainDomain(url *url.URL) (secure bool, dns, path string) {
-	if url == nil {
+func extractMainDomain(u *url.URL) (secure bool, dns, path string) {
+	if u == nil {
 		log.Panic("No URL => Cannot set Cookie domain")
 	}
 
 	switch {
-	case url.Scheme == HTTP:
+	case u.Scheme == HTTP:
 		secure = false
 
-	case url.Scheme == HTTPS:
+	case u.Scheme == HTTPS:
 		secure = true
 
 	default:
-		log.Panic("Unexpected scheme in ", url)
+		log.Panic("Unexpected scheme in ", u)
 	}
 
-	return secure, url.Hostname(), url.Path
+	return secure, u.Hostname(), u.Path
 }
 
 func isLocalhost(urls []*url.URL) bool {
