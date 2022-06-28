@@ -12,11 +12,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/teal-finance/incorruptible/dtoken"
-	"github.com/teal-finance/incorruptible/format/coding"
-
 	"github.com/klauspost/compress/s2"
 	rand "github.com/zhangyunhao116/fastrand"
+
+	"github.com/teal-finance/incorruptible/dtoken"
+	"github.com/teal-finance/incorruptible/format/coding"
 )
 
 const (
