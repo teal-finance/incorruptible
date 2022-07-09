@@ -120,7 +120,7 @@ your contributions are welcome. :wink:
 
 ## 🗽 Copyright and license
 
-Copyright (c) 2022 Teal.Finance contributors
+Copyright (c) 2022 Teal.Finance/incorruptible contributors
 
 Teal.Finance/incorruptible is free software, and can be redistributed
 and/or modified under the terms of the MIT License.

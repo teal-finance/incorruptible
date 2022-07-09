@@ -1,5 +1,6 @@
-// Copyright (c) 2022 Teal.Finance contributors
-// This file is part of Teal.Finance/incorruptible licensed under the MIT License.
+// Copyright 2022 Teal.Finance/incorruptible contributors
+// This file is part of Teal.Finance/incorruptible
+// a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
 // Package aead provides Encrypt() and Decrypt() for
@@ -16,7 +17,7 @@
 //
 // Assumption design: This library should be used on AES-supported hardware
 // like AMD/Intel processors providing optimized AES instructions set.
-// If this is not your case, please repport a feature request
+// If this is not your case, please report a feature request
 // to implement support for ChaCha20Poly1305.
 //
 // GCM (Galois Counter Mode) is preferred over CBC (Cipher Block Chaining)

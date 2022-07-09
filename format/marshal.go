@@ -1,11 +1,12 @@
-// Copyright (c) 2022 Teal.Finance contributors
-// This file is part of Teal.Finance/incorruptible licensed under the MIT License.
+// Copyright 2022 Teal.Finance/incorruptible contributors
+// This file is part of Teal.Finance/incorruptible
+// a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
 // Package format serialize a DToken in a short way.
 // The format starts with a magic code (2 bytes),
 // followed by the expiry time, the client IP, the user-defined values,
-// and ends with ramdom salt as padding for a final size aligned on 32 bits.
+// and ends with random salt as padding for a final size aligned on 32 bits.
 package format
 
 import (
