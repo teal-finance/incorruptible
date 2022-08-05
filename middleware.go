@@ -44,7 +44,7 @@ func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
 // Chk finally stores the decoded token in the request context.
 // In dev. mode, Chk accepts requests without valid cookie but does not store invalid tokens.
 func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
-	log.Printf("Middleware IncorruptibleChk cookie DevMode=%v", incorr.IsDev)
+	log.Print("Middleware IncorruptibleChk cookie DevMode=", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tv, err := incorr.DecodeCookieToken(r)
@@ -66,7 +66,7 @@ func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
 // Vet finally stores the decoded token in the request context.
 // In dev. mode, Vet accepts requests without a valid token but does not store invalid tokens.
 func (incorr *Incorruptible) Vet(next http.Handler) http.Handler {
-	log.Printf("Middleware IncorruptibleVet cookie/bearer DevMode=%v", incorr.IsDev)
+	log.Print("Middleware IncorruptibleVet cookie/bearer DevMode=", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tv, err := incorr.DecodeToken(r)
