@@ -138,19 +138,19 @@ func (incorr *Incorruptible) NewCookie(r *http.Request) (*http.Cookie, tvalues.T
 	return &cookie, tv, nil
 }
 
-func (incorr *Incorruptible) NewCookieFromDT(tv tvalues.TValues) (http.Cookie, error) {
-	base91, err := incorr.Encode(tv) // "base91" is the encoded token in Base91
+func (incorr *Incorruptible) NewCookieFromTV(tv tvalues.TValues) (http.Cookie, error) {
+	token, err := incorr.Encode(tv)
 	if err != nil {
 		return incorr.cookie, err
 	}
-	cookie := incorr.NewCookieFromToken(base91, tv.ExpiryTime())
+	cookie := incorr.NewCookieFromToken(token, tv.MaxAge())
 	return cookie, nil
 }
 
-func (incorr *Incorruptible) NewCookieFromToken(token string, expires time.Time) http.Cookie {
+func (incorr *Incorruptible) NewCookieFromToken(token string, maxAge int) http.Cookie {
 	cookie := incorr.cookie
 	cookie.Value = tokenScheme + token
-	cookie.Expires = expires
+	cookie.MaxAge = maxAge
 	return cookie
 }
 

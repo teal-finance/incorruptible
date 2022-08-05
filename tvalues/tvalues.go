@@ -56,6 +56,13 @@ func (tv TValues) ExpiryTime() time.Time {
 	return time.Unix(tv.Expires, 0)
 }
 
+func (tv TValues) MaxAge() int {
+	if tv.Expires <= 0 {
+		return 0
+	}
+	return int(tv.Expires - time.Now().Unix())
+}
+
 func (tv *TValues) SetRemoteIP(r *http.Request) error {
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
