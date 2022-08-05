@@ -12,10 +12,10 @@ import (
 	"strconv"
 )
 
-type WriteHTTP func(w http.ResponseWriter, r *http.Request, statusCode int, messages ...any)
+type WriteErr func(w http.ResponseWriter, r *http.Request, statusCode int, messages ...any)
 
 // Write is a fast and pretty JSON marshaler.
-func defaultWriteHTTP(w http.ResponseWriter, r *http.Request, statusCode int, messages ...any) {
+func defaultWriteErr(w http.ResponseWriter, r *http.Request, statusCode int, messages ...any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(statusCode)
@@ -39,7 +39,7 @@ func defaultWriteHTTP(w http.ResponseWriter, r *http.Request, statusCode int, me
 }
 
 func appendMessages(buf []byte, messages []any) []byte {
-	buf = append(buf, []byte(`"error":`)...)
+	buf = append(buf, []byte(`"message":`)...)
 	buf = appendKey(buf, messages[0])
 
 	for i := 1; i < len(messages); i += 2 {
