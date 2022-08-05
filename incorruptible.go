@@ -138,20 +138,20 @@ func (incorr *Incorruptible) NewCookie(r *http.Request) (*http.Cookie, tvalues.T
 	return &cookie, tv, nil
 }
 
-func (incorr *Incorruptible) NewCookieFromTV(tv tvalues.TValues) (http.Cookie, error) {
+func (incorr *Incorruptible) NewCookieFromTV(tv tvalues.TValues) (*http.Cookie, error) {
 	token, err := incorr.Encode(tv)
 	if err != nil {
-		return incorr.cookie, err
+		return &incorr.cookie, err
 	}
 	cookie := incorr.NewCookieFromToken(token, tv.MaxAge())
 	return cookie, nil
 }
 
-func (incorr *Incorruptible) NewCookieFromToken(token string, maxAge int) http.Cookie {
+func (incorr *Incorruptible) NewCookieFromToken(token string, maxAge int) *http.Cookie {
 	cookie := incorr.cookie
 	cookie.Value = tokenScheme + token
 	cookie.MaxAge = maxAge
-	return cookie
+	return &cookie
 }
 
 // Cookie returns the internal cookie (used for test purpose).
