@@ -7,23 +7,22 @@ package incorruptible
 
 import (
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/teal-finance/incorruptible/aead"
-	"github.com/teal-finance/incorruptible/dtoken"
+	"github.com/teal-finance/incorruptible/tvalues"
 
 	// baseN "github.com/teal-finance/BaseXX/base92" // toggle package with same interface.
 	baseN "github.com/mtraver/base91"
 )
 
 type Incorruptible struct {
-	writeErr WriteHTTP
-	Expiry   time.Duration
-	SetIP    bool          // If true => put the remote IP in the token.
-	dtoken   dtoken.DToken // dtoken is the "tiny" token.
+	writeErr WriteErr
+	SetIP    bool // If true => put the remote IP in the token.
 	cookie   http.Cookie
 	IsDev    bool
 	cipher   aead.Cipher
@@ -32,19 +31,15 @@ type Incorruptible struct {
 }
 
 const (
-	authScheme        = "Bearer "
-	secretTokenScheme = "i:" // See RFC 8959, "i" means "incorruptible" format
-	prefixScheme      = authScheme + secretTokenScheme
-
-	// secondsPerYear = 31556952 // average including leap years
-	// nsPerYear      = secondsPerYear * 1_000_000_000.
+	authScheme   = "Bearer "
+	tokenScheme  = "i:" // See RFC 8959, here "i" means "incorruptible token format"
+	prefixScheme = authScheme + tokenScheme
 )
 
-func New(urls []*url.URL, secretKey []byte, expiry time.Duration, setIP bool, writeErr WriteHTTP) *Incorruptible {
+func New(name string, urls []*url.URL, secretKey []byte, maxAge int, setIP bool, writeErr WriteErr) *Incorruptible {
 	if len(urls) == 0 {
 		log.Panic("No urls => Cannot set Cookie domain")
 	}
-
 	secure, dns, path := extractMainDomain(urls[0])
 
 	cipher, err := aead.New(secretKey)
@@ -53,90 +48,96 @@ func New(urls []*url.URL, secretKey []byte, expiry time.Duration, setIP bool, wr
 	}
 
 	if writeErr == nil {
-		writeErr = defaultWriteHTTP
+		writeErr = defaultWriteErr
 	}
 
 	incorr := Incorruptible{
 		writeErr: writeErr,
-		Expiry:   expiry,
 		SetIP:    setIP,
-		// the "tiny" token is the default token
-		dtoken: dtoken.DToken{Expiry: 0, IP: nil, Values: nil},
-		cookie: emptyCookie("session", secure, dns, path),
-		IsDev:  isLocalhost(urls),
-		cipher: cipher,
-		magic:  secretKey[0],
-		baseN:  baseN.NewEncoding(noSpaceDoubleQuoteSemicolon),
+		cookie:   emptyCookie(name, secure, dns, path, maxAge),
+		IsDev:    isLocalhost(urls),
+		cipher:   cipher,
+		magic:    secretKey[0],
+		baseN:    baseN.NewEncoding(shuffle(noSpaceDoubleQuoteSemicolon)),
 	}
-
-	// serialize the "tiny" token (with encryption and Base91 encoding)
-	base91, err := incorr.Encode(incorr.dtoken)
-	if err != nil {
-		log.Panic("Encode(emptyToken) ", err)
-	}
-
-	// insert this generated token in the cookie
-	incorr.cookie.Value = secretTokenScheme + base91
-
+	incorr.addMinimalistToken()
 	return &incorr
 }
 
-func (incorr *Incorruptible) NewCookie(dt dtoken.DToken) (http.Cookie, error) {
-	base91, err := incorr.Encode(dt)
+func (incorr *Incorruptible) addMinimalistToken() {
+	if !incorr.useMinimalistToken() {
+		return
+	}
+
+	// serialize a minimalist token
+	// including encryption and Base91-encoding
+	token, err := incorr.Encode(tvalues.New())
+	if err != nil {
+		log.Panic("addMinimalistToken ", err)
+	}
+
+	// insert this generated token in the cookie
+	incorr.cookie.Value = tokenScheme + token
+}
+
+func (incorr *Incorruptible) useMinimalistToken() bool {
+	return (incorr.cookie.MaxAge <= 0) && (!incorr.SetIP)
+}
+
+// equalMinimalistToken compares with the default token.
+func (incorr *Incorruptible) equalMinimalistToken(base91 string) bool {
+	const schemeSize = len(tokenScheme) // to skip the token scheme
+	return incorr.useMinimalistToken() && (base91 == incorr.cookie.Value[schemeSize:])
+}
+
+func shuffle(s string) string {
+	r := []rune(s)
+	rand.Shuffle(len(r), func(i, j int) { r[i], r[j] = r[j], r[i] })
+	return string(r)
+}
+
+// NewCookie creates a new cookie based on default values.
+// the HTTP request parameter is used to get the remote IP (only when incorr.SetIP is true).
+func (incorr *Incorruptible) NewCookie(r *http.Request) (*http.Cookie, tvalues.TValues, error) {
+	cookie := incorr.cookie // local copy of the default cookie
+	tv := tvalues.New()
+
+	if !incorr.useMinimalistToken() {
+		tv.SetExpiry(cookie.MaxAge)
+		if incorr.SetIP {
+			err := tv.SetRemoteIP(r)
+			if err != nil {
+				return &cookie, tv, err
+			}
+		}
+		token, err := incorr.Encode(tv)
+		if err != nil {
+			return &cookie, tv, err
+		}
+		cookie.Value = tokenScheme + token
+	}
+
+	return &cookie, tv, nil
+}
+
+func (incorr *Incorruptible) NewCookieFromDT(tv tvalues.TValues) (http.Cookie, error) {
+	base91, err := incorr.Encode(tv) // "base91" is the encoded token in Base91
 	if err != nil {
 		return incorr.cookie, err
 	}
-
-	cookie := incorr.NewCookieFromToken(base91, dt.ExpiryTime())
+	cookie := incorr.NewCookieFromToken(base91, tv.ExpiryTime())
 	return cookie, nil
 }
 
-func (incorr *Incorruptible) NewCookieFromToken(base91 string, expiry time.Time) http.Cookie {
+func (incorr *Incorruptible) NewCookieFromToken(token string, expires time.Time) http.Cookie {
 	cookie := incorr.cookie
-	cookie.Value = secretTokenScheme + base91
-
-	if expiry.IsZero() {
-		cookie.Expires = time.Time{} // time.Now().Add(nsPerYear)
-	} else {
-		cookie.Expires = expiry
-	}
-
+	cookie.Value = tokenScheme + token
+	cookie.Expires = expires
 	return cookie
 }
 
-func (incorr *Incorruptible) SetCookie(w http.ResponseWriter, r *http.Request) dtoken.DToken {
-	dt := incorr.dtoken     // copy the "tiny" token
-	cookie := incorr.cookie // copy the default cookie
-
-	if incorr.Expiry <= 0 {
-		cookie.Expires = time.Time{} // time.Now().Add(nsPerYear)
-	} else {
-		cookie.Expires = time.Now().Add(incorr.Expiry)
-		dt.SetExpiry(incorr.Expiry)
-	}
-
-	if incorr.SetIP {
-		err := dt.SetRemoteIP(r)
-		if err != nil {
-			log.Panic(err)
-		}
-	}
-
-	requireNewEncoding := (incorr.Expiry > 0) || incorr.SetIP
-	if requireNewEncoding {
-		base91, err := incorr.Encode(dt)
-		if err != nil {
-			log.Panic(err)
-		}
-		cookie.Value = secretTokenScheme + base91
-	}
-
-	http.SetCookie(w, &cookie)
-	return dt
-}
-
-// Cookie returns the internal cookie (for test purpose).
-func (incorr *Incorruptible) Cookie(int) *http.Cookie {
+// Cookie returns the internal cookie (used for test purpose).
+func (incorr *Incorruptible) Cookie(_ int) *http.Cookie {
 	return &incorr.cookie
 }
 
@@ -178,9 +179,12 @@ func isLocalhost(urls []*url.URL) bool {
 	return false
 }
 
-func emptyCookie(name string, secure bool, dns, path string) http.Cookie {
+func emptyCookie(name string, secure bool, dns, path string, maxAge int) http.Cookie {
 	if path != "" && path[len(path)-1] == '/' {
 		path = path[:len(path)-1] // remove trailing slash
+	}
+	if path == "" {
+		path = "/"
 	}
 
 	return http.Cookie{
@@ -190,7 +194,7 @@ func emptyCookie(name string, secure bool, dns, path string) http.Cookie {
 		Domain:     dns,
 		Expires:    time.Time{},
 		RawExpires: "",
-		MaxAge:     0, // secondsPerYear,
+		MaxAge:     maxAge,
 		Secure:     secure,
 		HttpOnly:   true,
 		SameSite:   http.SameSiteStrictMode,

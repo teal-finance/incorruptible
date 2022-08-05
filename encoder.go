@@ -13,13 +13,13 @@ import (
 	"log"
 	"time"
 
-	"github.com/teal-finance/incorruptible/dtoken"
 	"github.com/teal-finance/incorruptible/format"
 	"github.com/teal-finance/incorruptible/format/coding"
+	"github.com/teal-finance/incorruptible/tvalues"
 )
 
 const (
-	base92MinSize     = 26
+	Base91MinSize     = 27
 	ciphertextMinSize = 22
 
 	// no space, no double-quote ", no semi-colon ; and no back-slash \.
@@ -31,58 +31,59 @@ const (
 	doPrint = false
 )
 
-func (incorr *Incorruptible) Encode(dt dtoken.DToken) (string, error) {
-	printDT("Encode", dt, errors.New(""))
+func (incorr *Incorruptible) Encode(tv tvalues.TValues) (string, error) {
+	printV("Encode", tv, errors.New(""))
 
-	plaintext, err := format.Marshal(dt, incorr.magic)
+	plainText, err := format.Marshal(tv, incorr.magic)
 	if err != nil {
 		return "", err
 	}
-	printBin("Encode plaintext", plaintext)
+	printB("Encode plaintext", plainText)
 
-	ciphertext := incorr.cipher.Encrypt(plaintext)
-	printBin("Encode ciphertext", ciphertext)
+	cipherText := incorr.cipher.Encrypt(plainText)
+	printB("Encode ciphertext", cipherText)
 
-	str := incorr.baseN.EncodeToString(ciphertext)
-	printStr("Encode BaseXX", str)
+	str := incorr.baseN.EncodeToString(cipherText)
+	printS("Encode BaseXX", str)
 	return str, nil
 }
 
-func (incorr *Incorruptible) Decode(str string) (dtoken.DToken, error) {
-	printStr("Decode BaseXX", str)
+func (incorr *Incorruptible) Decode(str string) (tvalues.TValues, error) {
+	printS("Decode BaseXX", str)
 
-	var dt dtoken.DToken
-	if len(str) < base92MinSize {
-		return dt, fmt.Errorf("BaseXX string too short: %d < min=%d", len(str), base92MinSize)
+	var tv tvalues.TValues
+	if len(str) < Base91MinSize {
+		return tv, fmt.Errorf("BaseXX string too short: %d < min=%d", len(str), Base91MinSize)
 	}
 
-	ciphertext, err := incorr.baseN.DecodeString(str)
+	cipherText, err := incorr.baseN.DecodeString(str)
 	if err != nil {
-		return dt, err
+		return tv, err
 	}
-	printBin("Decode ciphertext", ciphertext)
+	printB("Decode cipherText", cipherText)
 
-	if len(ciphertext) < ciphertextMinSize {
-		return dt, fmt.Errorf("ciphertext too short: %d < min=%d", len(ciphertext), ciphertextMinSize)
+	if len(cipherText) < ciphertextMinSize {
+		return tv, fmt.Errorf("cipherText too short: %d < min=%d", len(cipherText), ciphertextMinSize)
 	}
 
-	plaintext, err := incorr.cipher.Decrypt(ciphertext)
+	plainText, err := incorr.cipher.Decrypt(cipherText)
 	if err != nil {
-		return dt, err
+		return tv, err
 	}
-	printBin("Decode plaintext", plaintext)
+	printB("Decode plainText", plainText)
 
-	magic := coding.MagicCode(plaintext)
+	magic := coding.MagicCode(plainText)
 	if magic != incorr.magic {
-		return dt, errors.New("bad magic code")
+		return tv, errors.New("bad magic code")
 	}
 
-	dt, err = format.Unmarshal(plaintext)
-	printDT("Decode", dt, err)
-	return dt, err
+	tv, err = format.Unmarshal(plainText)
+	printV("Decode", tv, err)
+	return tv, err
 }
 
-func printStr(name, s string) {
+// printS prints a string in debug mode (when doPrint is true).
+func printS(name, s string) {
 	if doPrint {
 		n := len(s)
 		if n > 30 {
@@ -92,7 +93,8 @@ func printStr(name, s string) {
 	}
 }
 
-func printBin(name string, buf []byte) {
+// printB prints a byte-buffer in debug mode (when doPrint is true).
+func printB(name string, buf []byte) {
 	if doPrint {
 		n := len(buf)
 		if n > 30 {
@@ -102,9 +104,10 @@ func printBin(name string, buf []byte) {
 	}
 }
 
-func printDT(name string, dt dtoken.DToken, err error) {
+// printV prints TValues in debug mode (when doPrint is true).
+func printV(name string, tv tvalues.TValues, err error) {
 	if doPrint {
-		log.Printf("Incorr%s dt %v %v n=%d err=%s", name,
-			time.Unix(dt.Expiry, 0), dt.IP, len(dt.Values), err)
+		log.Printf("Incorr%s tv %v %v n=%d err=%s", name,
+			time.Unix(tv.Expires, 0), tv.IP, len(tv.Values), err)
 	}
 }

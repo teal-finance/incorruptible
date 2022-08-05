@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/teal-finance/incorruptible/dtoken"
 	"github.com/teal-finance/incorruptible/format"
 	"github.com/teal-finance/incorruptible/format/coding"
+	"github.com/teal-finance/incorruptible/tvalues"
 )
 
 var expiry = time.Date(coding.ExpiryStartYear, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
@@ -22,90 +22,90 @@ var cases = []struct {
 	name    string
 	magic   uint8
 	wantErr bool
-	dtoken  dtoken.DToken
+	tvalues tvalues.TValues
 }{
 	{
-		"noIP", 109, false, dtoken.DToken{
-			Expiry: expiry,
-			IP:     nil,
-			Values: nil,
+		"noIP", 109, false, tvalues.TValues{
+			Expires: expiry,
+			IP:      nil,
+			Values:  nil,
 		},
 	},
 	{
-		"noIPnoExpiry", 109, false, dtoken.DToken{
-			Expiry: 0,
-			IP:     nil,
-			Values: nil,
+		"noIPnoExpiry", 109, false, tvalues.TValues{
+			Expires: 0,
+			IP:      nil,
+			Values:  nil,
 		},
 	},
 	{
-		"noExpiry", 109, false, dtoken.DToken{
-			Expiry: 0,
-			IP:     net.IPv4(0, 0, 0, 0),
-			Values: nil,
+		"noExpiry", 109, false, tvalues.TValues{
+			Expires: 0,
+			IP:      net.IPv4(0, 0, 0, 0),
+			Values:  nil,
 		},
 	},
 	{
 		"noneIPv4", 0x51, false,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IPv4(11, 22, 33, 44),
-			Values: [][]byte{},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IPv4(11, 22, 33, 44),
+			Values:  [][]byte{},
 		},
 	},
 	{
 		"noneIPv6", 0x51, false,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-			Values: [][]byte{},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+			Values:  [][]byte{},
 		},
 	},
 	{
 		"1emptyIPv6", 0x51, false,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-			Values: [][]byte{[]byte("")},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+			Values:  [][]byte{[]byte("")},
 		},
 	},
 	{
 		"4emptyIPv6", 0x51, false,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-			Values: [][]byte{[]byte(""), []byte(""), []byte(""), []byte("")},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+			Values:  [][]byte{[]byte(""), []byte(""), []byte(""), []byte("")},
 		},
 	},
 	{
 		"1smallIPv6", 0x51, false,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-			Values: [][]byte{[]byte("1")},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+			Values:  [][]byte{[]byte("1")},
 		},
 	},
 	{
 		"1valIPv6", 0x51, false,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-			Values: [][]byte{[]byte("123456789-B-123456789-C-123456789-D-123456789-E-123456789")},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+			Values:  [][]byte{[]byte("123456789-B-123456789-C-123456789-D-123456789-E-123456789")},
 		},
 	},
 	{
 		"1moreIPv6", 0x51, false,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-			Values: [][]byte{[]byte("123456789-B-123456789-C-123456789-D-123456789-E-123456789-")},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+			Values:  [][]byte{[]byte("123456789-B-123456789-C-123456789-D-123456789-E-123456789-")},
 		},
 	},
 	{
 		"Compress 10valIPv6", 0x51, false,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values: [][]byte{
 				[]byte("123456789-B-123456789-C-123456789-D-123456789-E-123456789"),
 				[]byte("123456789-F-123456789-C-123456789-D-123456789-E-123456789"),
@@ -119,9 +119,9 @@ var cases = []struct {
 	},
 	{
 		"too much values", 0x51, true,
-		dtoken.DToken{
-			Expiry: expiry,
-			IP:     net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+		tvalues.TValues{
+			Expires: expiry,
+			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values: [][]byte{
 				{1},
 				{2},
@@ -206,9 +206,9 @@ func TestUnmarshal(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
-			c.dtoken.ShortenIP()
+			c.tvalues.ShortenIP4Length()
 
-			b, err := format.Marshal(c.dtoken, c.magic)
+			b, err := format.Marshal(c.tvalues, c.magic)
 			if (err == nil) == c.wantErr {
 				t.Errorf("Marshal() error = %v, wantErr %v", err, c.wantErr)
 				return
@@ -242,22 +242,22 @@ func TestUnmarshal(t *testing.T) {
 				return
 			}
 
-			min := c.dtoken.Expiry - coding.PrecisionInSeconds
-			max := c.dtoken.Expiry + coding.PrecisionInSeconds
-			validExpiry := (min <= got.Expiry) && (got.Expiry <= max)
+			min := c.tvalues.Expires - coding.PrecisionInSeconds
+			max := c.tvalues.Expires + coding.PrecisionInSeconds
+			validExpiry := (min <= got.Expires) && (got.Expires <= max)
 			if !validExpiry {
 				t.Errorf("Expiry too different got=%v original=%v want in [%d %d]",
-					got.Expiry, c.dtoken.Expiry, min, max)
+					got.Expires, c.tvalues.Expires, min, max)
 			}
 
-			if (len(got.IP) > 0 || len(c.dtoken.IP) > 0) &&
-				!reflect.DeepEqual(got.IP, c.dtoken.IP) {
-				t.Errorf("Mismatch IP got %v, want %v", got.IP, c.dtoken.IP)
+			if (len(got.IP) > 0 || len(c.tvalues.IP) > 0) &&
+				!reflect.DeepEqual(got.IP, c.tvalues.IP) {
+				t.Errorf("Mismatch IP got %v, want %v", got.IP, c.tvalues.IP)
 			}
 
-			if (len(got.Values) > 0 || len(c.dtoken.Values) > 0) &&
-				!reflect.DeepEqual(got.Values, c.dtoken.Values) {
-				t.Errorf("Mismatch Values got %v, want %v", got.Values, c.dtoken.Values)
+			if (len(got.Values) > 0 || len(c.tvalues.Values) > 0) &&
+				!reflect.DeepEqual(got.Values, c.tvalues.Values) {
+				t.Errorf("Mismatch Values got %v, want %v", got.Values, c.tvalues.Values)
 			}
 		})
 	}

@@ -3,7 +3,7 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-// Package format serialize a DToken in a short way.
+// Package format serialize a TValues in a short way.
 // The format starts with a magic code (2 bytes),
 // followed by the expiry time, the client IP, the user-defined values,
 // and ends with random salt as padding for a final size aligned on 32 bits.
@@ -16,8 +16,8 @@ import (
 	"github.com/klauspost/compress/s2"
 	rand "github.com/zhangyunhao116/fastrand"
 
-	"github.com/teal-finance/incorruptible/dtoken"
 	"github.com/teal-finance/incorruptible/format/coding"
+	"github.com/teal-finance/incorruptible/tvalues"
 )
 
 const (
@@ -37,15 +37,15 @@ type Serializer struct {
 	compressed   bool
 }
 
-func newSerializer(dt dtoken.DToken) Serializer {
+func newSerializer(tv tvalues.TValues) Serializer {
 	var s Serializer
 
-	s.ipLength = len(dt.IP) // can be 0, 4 or 16
+	s.ipLength = len(tv.IP) // can be 0, 4 or 16
 
-	s.nValues = len(dt.Values)
+	s.nValues = len(tv.Values)
 
 	s.valTotalSize = s.nValues
-	for _, v := range dt.Values {
+	for _, v := range tv.Values {
 		s.valTotalSize += len(v)
 	}
 
@@ -58,7 +58,7 @@ func newSerializer(dt dtoken.DToken) Serializer {
 
 // doesCompress decides to compress or not the payload.
 // The compression decision is a bit randomized
-// to limit the "chosen plaintext" attack.
+// to limit the "chosen plainText" attack.
 func doesCompress(payloadSize int) bool {
 	switch {
 	case payloadSize < sizeMayCompress:
@@ -70,15 +70,15 @@ func doesCompress(payloadSize int) bool {
 	}
 }
 
-func Marshal(dt dtoken.DToken, magic uint8) ([]byte, error) {
-	s := newSerializer(dt)
+func Marshal(tv tvalues.TValues, magic uint8) ([]byte, error) {
+	s := newSerializer(tv)
 
-	b, err := s.putHeaderExpiryIP(magic, dt)
+	b, err := s.putHeaderExpiryIP(magic, tv)
 	if err != nil {
 		return nil, err
 	}
 
-	b, err = s.appendValues(b, dt)
+	b, err = s.appendValues(b, tv)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (s Serializer) allocateBuffer() []byte {
 	return make([]byte, length, capacity)
 }
 
-func (s Serializer) putHeaderExpiryIP(magic uint8, dt dtoken.DToken) ([]byte, error) {
+func (s Serializer) putHeaderExpiryIP(magic uint8, tv tvalues.TValues) ([]byte, error) {
 	b := s.allocateBuffer()
 
 	m, err := coding.NewMetadata(s.ipLength, s.compressed, s.nValues)
@@ -123,18 +123,18 @@ func (s Serializer) putHeaderExpiryIP(magic uint8, dt dtoken.DToken) ([]byte, er
 
 	m.PutHeader(b, magic)
 
-	err = coding.PutExpiry(b, dt.Expiry)
+	err = coding.PutExpiry(b, tv.Expires)
 	if err != nil {
 		return nil, err
 	}
 
-	b = coding.AppendIP(b, dt.IP)
+	b = coding.AppendIP(b, tv.IP)
 
 	return b, nil
 }
 
-func (s Serializer) appendValues(buf []byte, dt dtoken.DToken) ([]byte, error) {
-	for _, v := range dt.Values {
+func (s Serializer) appendValues(buf []byte, tv tvalues.TValues) ([]byte, error) {
+	for _, v := range tv.Values {
 		if len(v) > 255 {
 			return nil, fmt.Errorf("too large %d > 255", v)
 		}

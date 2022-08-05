@@ -11,17 +11,17 @@ import (
 
 	"github.com/klauspost/compress/s2"
 
-	"github.com/teal-finance/incorruptible/dtoken"
 	"github.com/teal-finance/incorruptible/format/coding"
+	"github.com/teal-finance/incorruptible/tvalues"
 )
 
 const doPrint = false
 
-func Unmarshal(buf []byte) (dtoken.DToken, error) {
+func Unmarshal(buf []byte) (tvalues.TValues, error) {
 	printDebug("Unmarshal", buf)
 
 	if len(buf) < coding.HeaderSize+coding.ExpirySize {
-		return dtoken.DToken{}, fmt.Errorf("not enough bytes (%d) for header+expiry", len(buf))
+		return tvalues.TValues{}, fmt.Errorf("not enough bytes (%d) for header+expiry", len(buf))
 	}
 
 	meta := coding.GetMetadata(buf)
@@ -33,7 +33,7 @@ func Unmarshal(buf []byte) (dtoken.DToken, error) {
 		var err error
 		buf, err = dropPadding(buf)
 		if err != nil {
-			return dtoken.DToken{}, err
+			return tvalues.TValues{}, err
 		}
 		printDebug("Unmarshal Padding", buf)
 	}
@@ -42,30 +42,30 @@ func Unmarshal(buf []byte) (dtoken.DToken, error) {
 		var err error
 		buf, err = s2.Decode(nil, buf)
 		if err != nil {
-			return dtoken.DToken{}, fmt.Errorf("s2.Decode %w", err)
+			return tvalues.TValues{}, fmt.Errorf("s2.Decode %w", err)
 		}
 		printDebug("Unmarshal Uncompress", buf)
 	}
 
 	if len(buf) < meta.PayloadMinSize() {
-		return dtoken.DToken{}, fmt.Errorf("not enough bytes for payload %d < %d", len(buf), meta.PayloadMinSize())
+		return tvalues.TValues{}, fmt.Errorf("not enough bytes for payload %d < %d", len(buf), meta.PayloadMinSize())
 	}
 
-	var dt dtoken.DToken
-	buf, dt.Expiry = coding.DecodeExpiry(buf)
-	buf, dt.IP = meta.DecodeIP(buf)
+	var tv tvalues.TValues
+	buf, tv.Expires = coding.DecodeExpiry(buf)
+	buf, tv.IP = meta.DecodeIP(buf)
 
 	printDebug("Unmarshal Expiry IP", buf)
 
 	var err error
-	dt.Values, err = parseValues(buf, meta.NValues())
+	tv.Values, err = parseValues(buf, meta.NValues())
 	if err != nil {
-		return dt, err
+		return tv, err
 	}
 
 	printDebug("Unmarshal Values", buf)
 
-	return dt, nil
+	return tv, nil
 }
 
 func parseValues(buf []byte, nV int) ([][]byte, error) {

@@ -10,42 +10,47 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
-	"github.com/teal-finance/incorruptible/dtoken"
+	"github.com/teal-finance/incorruptible/tvalues"
 )
 
 // Set puts a "session" cookie when the request has no valid "incorruptible" token.
-// The token is searched the "session" cookie and in the first "Authorization" header.
-// The "session" cookie (that is added in the response) contains the "tiny" token.
+// The token is searched in the "session" cookie and in the first "Authorization" header.
+// The "session" cookie (that is added in the response) contains a minimalist "incorruptible" token.
 // Finally, Set stores the decoded token in the request context.
 func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
-	log.Printf("Middleware SessionSet cookie %q %v setIP=%v",
-		incorr.cookie.Name, incorr.Expiry.Truncate(time.Second), incorr.SetIP)
+	log.Printf("Middleware IncorruptibleSet cookie %q MaxAge=%v setIP=%v",
+		incorr.cookie.Name, incorr.cookie.MaxAge, incorr.SetIP)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		dt, err := incorr.DecodeToken(r)
-		if err != nil {
+		tv, a := incorr.DecodeToken(r)
+		if a != nil {
 			// no valid token found => set a new token
-			dt = incorr.SetCookie(w, r)
+			cookie, newDT, err := incorr.NewCookie(r)
+			if err != nil {
+				log.Print("Middleware IncorruptibleSet ", err)
+				return
+			}
+			http.SetCookie(w, cookie)
+			tv = newDT
 		}
-		next.ServeHTTP(w, dt.PutInCtx(r))
+		next.ServeHTTP(w, tv.ToCtx(r))
 	})
 }
 
 // Chk accepts requests only if it has a valid cookie.
 // Chk does not verify the "Authorization" header.
-// See the Vet() function to also verify the "Authorization" header.
-// Chk also stores the decoded token in the request context.
-// In dev. testing, Chk accepts any request but does not store invalid tokens.
+// Use instead the Vet() middleware to also verify the "Authorization" header.
+// Chk finally stores the decoded token in the request context.
+// In dev. mode, Chk accepts requests without valid cookie but does not store invalid tokens.
 func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
-	log.Printf("Middleware SessionChk cookie DevMode=%v", incorr.IsDev)
+	log.Printf("Middleware IncorruptibleChk cookie DevMode=%v", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		dt, err := incorr.DecodeCookieToken(r)
+		tv, err := incorr.DecodeCookieToken(r)
 		switch {
 		case err == nil: // OK: put the token in the request context
-			r = dt.PutInCtx(r)
+			r = tv.ToCtx(r)
 		case incorr.IsDev:
 			printDebug("Chk DevMode no cookie", err)
 		default:
@@ -58,16 +63,16 @@ func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
 
 // Vet accepts requests having a valid token either in
 // the "session" cookie or in the first "Authorization" header.
-// Vet also stores the decoded token in the request context.
-// In dev. testing, Vet accepts any request but does not store invalid tokens.
+// Vet finally stores the decoded token in the request context.
+// In dev. mode, Vet accepts requests without a valid token but does not store invalid tokens.
 func (incorr *Incorruptible) Vet(next http.Handler) http.Handler {
-	log.Printf("Middleware SessionVet cookie/bearer DevMode=%v", incorr.IsDev)
+	log.Printf("Middleware IncorruptibleVet cookie/bearer DevMode=%v", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		dt, err := incorr.DecodeToken(r)
+		tv, err := incorr.DecodeToken(r)
 		switch {
 		case err == nil:
-			r = dt.PutInCtx(r) // put the token in the request context
+			r = tv.ToCtx(r) // put the token in the request context
 		case !incorr.IsDev:
 			incorr.writeErr(w, r, http.StatusUnauthorized, err...)
 			return
@@ -76,8 +81,8 @@ func (incorr *Incorruptible) Vet(next http.Handler) http.Handler {
 	})
 }
 
-func (incorr *Incorruptible) DecodeToken(r *http.Request) (dtoken.DToken, []any) {
-	var dt dtoken.DToken
+func (incorr *Incorruptible) DecodeToken(r *http.Request) (tvalues.TValues, []any) {
+	var tv tvalues.TValues
 	var err [2]error
 
 	for i := 0; i < 2; i++ {
@@ -90,19 +95,19 @@ func (incorr *Incorruptible) DecodeToken(r *http.Request) (dtoken.DToken, []any)
 		if err[i] != nil {
 			continue
 		}
-		if incorr.equalDefaultToken(base91) {
-			return incorr.dtoken, nil
+		if incorr.equalMinimalistToken(base91) {
+			return tvalues.New(), nil
 		}
-		if dt, err[i] = incorr.Decode(base91); err[i] != nil {
+		if tv, err[i] = incorr.Decode(base91); err[i] != nil {
 			continue
 		}
-		if err[i] = dt.Valid(r); err[i] != nil {
+		if err[i] = tv.Valid(r); err[i] != nil {
 			continue
 		}
-		return dt, nil
+		return tv, nil
 	}
 
-	return dt, []any{
+	return tv, []any{
 		fmt.Errorf("missing or invalid 'incorruptible' token in either "+
 			"the '%s' cookie or the 1st 'Authorization' header", incorr.cookie.Name),
 		"error_cookie", err[0],
@@ -110,34 +115,34 @@ func (incorr *Incorruptible) DecodeToken(r *http.Request) (dtoken.DToken, []any)
 	}
 }
 
-func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (dtoken.DToken, error) {
+func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (tvalues.TValues, error) {
 	base91, err := incorr.CookieToken(r)
 	if err != nil {
-		return dtoken.DToken{}, err
+		return tvalues.TValues{}, err
 	}
-	if incorr.equalDefaultToken(base91) {
-		return incorr.dtoken, nil
+	if incorr.equalMinimalistToken(base91) {
+		return tvalues.New(), nil
 	}
-	dt, err := incorr.Decode(base91)
+	tv, err := incorr.Decode(base91)
 	if err != nil {
-		return dt, err
+		return tv, err
 	}
-	return dt, dt.Valid(r)
+	return tv, tv.Valid(r)
 }
 
-func (incorr *Incorruptible) DecodeBearerToken(r *http.Request) (dtoken.DToken, error) {
+func (incorr *Incorruptible) DecodeBearerToken(r *http.Request) (tvalues.TValues, error) {
 	base91, err := incorr.BearerToken(r)
 	if err != nil {
-		return dtoken.DToken{}, err
+		return tvalues.TValues{}, err
 	}
-	if incorr.equalDefaultToken(base91) {
-		return incorr.dtoken, nil
+	if incorr.equalMinimalistToken(base91) {
+		return tvalues.New(), nil
 	}
-	dt, err := incorr.Decode(base91)
+	tv, err := incorr.Decode(base91)
 	if err != nil {
-		return dt, err
+		return tv, err
 	}
-	return dt, dt.Valid(r)
+	return tv, tv.Valid(r)
 }
 
 // CookieToken returns the token (in base91 format) from the cookie.
@@ -147,7 +152,7 @@ func (incorr *Incorruptible) CookieToken(r *http.Request) (string, error) {
 		return "", err
 	}
 
-	// TODO: test if usable:
+	// TODO: Add some other tests, but this may break specific usage:
 	// if !cookie.HttpOnly {
 	// 	return "", errors.New("no HttpOnly cookie")
 	// }
@@ -171,20 +176,13 @@ func (incorr *Incorruptible) BearerToken(r *http.Request) (string, error) {
 	return trimBearerScheme(auth)
 }
 
-// equalDefaultToken compares with the default token
-// by skipping the token scheme.
-func (incorr *Incorruptible) equalDefaultToken(base91 string) bool {
-	const n = len(secretTokenScheme)
-	return (base91 == incorr.cookie.Value[n:])
-}
-
 func trimTokenScheme(uri string) (string, error) {
-	const schemeSize = len(secretTokenScheme)
-	if len(uri) < schemeSize+base92MinSize {
-		return "", fmt.Errorf("token URI too short (%d bytes) want %d", len(uri), schemeSize+base92MinSize)
+	const schemeSize = len(tokenScheme)
+	if len(uri) < schemeSize+Base91MinSize {
+		return "", fmt.Errorf("token URI too short: %d < %d", len(uri), schemeSize+Base91MinSize)
 	}
-	if uri[:schemeSize] != secretTokenScheme {
-		return "", fmt.Errorf("want token URI '"+secretTokenScheme+"xxxxxxxx' got %q", uri)
+	if uri[:schemeSize] != tokenScheme {
+		return "", fmt.Errorf("want token URI in format '"+tokenScheme+"xxxxxxxx' got len=%d", len(uri))
 	}
 	tokenBase91 := uri[schemeSize:]
 	return tokenBase91, nil
@@ -192,11 +190,11 @@ func trimTokenScheme(uri string) (string, error) {
 
 func trimBearerScheme(auth string) (string, error) {
 	const prefixSize = len(prefixScheme)
-	if len(auth) < prefixSize+base92MinSize {
-		return "", fmt.Errorf("bearer too short (%d bytes) want %d", len(auth), prefixSize+base92MinSize)
+	if len(auth) < prefixSize+Base91MinSize {
+		return "", fmt.Errorf("bearer too short: %d < %d", len(auth), prefixSize+Base91MinSize)
 	}
 	if auth[:prefixSize] != prefixScheme {
-		return "", fmt.Errorf("want '"+prefixScheme+"xxxxxxxx' got %s", auth)
+		return "", fmt.Errorf("want format '"+prefixScheme+"xxxxxxxx' got len=%d", len(auth))
 	}
 	tokenBase91 := auth[prefixSize:]
 	return tokenBase91, nil
