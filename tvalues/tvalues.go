@@ -222,6 +222,7 @@ func (tv *TValues) set(i int, buf []byte) {
 
 // --------------------------------------
 // Set/Get token to/from request context.
+//
 //nolint:gochecknoglobals // Context access key need to be global variable.
 var key struct{}
 
