@@ -18,7 +18,7 @@ var cases = []struct {
 	i       int
 	v       uint64
 	wantErr bool
-	t       tvalues.TValues
+	tv      tvalues.TValues
 }{
 	{"v=0", 0, 0, false, tvalues.TValues{}},
 	{"v=1", 0, 1, false, tvalues.TValues{}},
@@ -59,16 +59,21 @@ func TestToken_Uint64(t *testing.T) {
 	t.Parallel()
 
 	for _, c := range cases {
+		// duplicate case data to enable parallel testing
 		c := c
+		if c.tv.Values != nil {
+			var newSlice [][]byte
+			c.tv.Values = append(newSlice, c.tv.Values...)
+		}
 
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
-			if err := c.t.SetUint64(c.i, c.v); (err != nil) != c.wantErr {
+			if err := c.tv.SetUint64(c.i, c.v); (err != nil) != c.wantErr {
 				t.Errorf("TValues.SetUint64() error = %v, wantErr %v", err, c.wantErr)
 			}
 
-			v, err := c.t.Uint64(c.i)
+			v, err := c.tv.Uint64(c.i)
 			if (err != nil) != c.wantErr {
 				t.Errorf("TValues.Uint64() error = %v, wantErr %v", err, c.wantErr)
 			}
@@ -84,18 +89,23 @@ func TestToken_Bool(t *testing.T) {
 	t.Parallel()
 
 	for _, c := range cases {
+		// duplicate case data to enable parallel testing
 		c := c
+		if c.tv.Values != nil {
+			var newSlice [][]byte
+			c.tv.Values = append(newSlice, c.tv.Values...)
+		}
 
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
 			v1 := ((c.v % 2) == 0)
 
-			if err := c.t.SetBool(c.i, v1); (err != nil) != c.wantErr {
+			if err := c.tv.SetBool(c.i, v1); (err != nil) != c.wantErr {
 				t.Errorf("TValues.SetUint64() error = %v, wantErr %v", err, c.wantErr)
 			}
 
-			v2, err := c.t.Bool(c.i)
+			v2, err := c.tv.Bool(c.i)
 			if (err != nil) != c.wantErr {
 				t.Errorf("TValues.Uint64() error = %v, wantErr %v", err, c.wantErr)
 			}
@@ -111,7 +121,12 @@ func TestToken_String(t *testing.T) {
 	t.Parallel()
 
 	for _, c := range cases {
+		// duplicate case data to enable parallel testing
 		c := c
+		if c.tv.Values != nil {
+			var newSlice [][]byte
+			c.tv.Values = append(newSlice, c.tv.Values...)
+		}
 
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -121,11 +136,11 @@ func TestToken_String(t *testing.T) {
 				v1 += strconv.FormatUint(c.v, 10) + c.name
 			}
 
-			if err := c.t.SetString(c.i, v1); (err != nil) != c.wantErr {
+			if err := c.tv.SetString(c.i, v1); (err != nil) != c.wantErr {
 				t.Errorf("TValues.SetUint64() error = %v, wantErr %v", err, c.wantErr)
 			}
 
-			v2, err := c.t.String(c.i)
+			v2, err := c.tv.String(c.i)
 			if (err != nil) != c.wantErr {
 				t.Errorf("TValues.Uint64() error = %v, wantErr %v", err, c.wantErr)
 			}
