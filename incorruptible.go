@@ -6,6 +6,7 @@
 package incorruptible
 
 import (
+	"encoding/binary"
 	"log"
 	"math/rand"
 	"net"
@@ -51,14 +52,18 @@ func New(name string, urls []*url.URL, secretKey []byte, maxAge int, setIP bool,
 		writeErr = defaultWriteErr
 	}
 
+	initRandomGenerator(secretKey)
+	magic := magicCode()
+	encodingAlphabet := shuffle(noSpaceDoubleQuoteSemicolon)
+
 	incorr := Incorruptible{
 		writeErr: writeErr,
 		SetIP:    setIP,
 		cookie:   emptyCookie(name, secure, dns, path, maxAge),
 		IsDev:    isLocalhost(urls),
 		cipher:   cipher,
-		magic:    secretKey[0],
-		baseN:    baseN.NewEncoding(shuffle(noSpaceDoubleQuoteSemicolon)),
+		magic:    magic,
+		baseN:    baseN.NewEncoding(encodingAlphabet),
 	}
 	incorr.addMinimalistToken()
 	return &incorr
@@ -90,6 +95,19 @@ func (incorr *Incorruptible) equalMinimalistToken(base91 string) bool {
 	return incorr.useMinimalistToken() && (base91 == incorr.cookie.Value[schemeSize:])
 }
 
+// initRandomGenerator initializes the random generator with a reproducible secret seed.
+func initRandomGenerator(secretKey []byte) {
+	seed := binary.BigEndian.Uint64(secretKey)
+	seed += binary.BigEndian.Uint64(secretKey[8:])
+	rand.Seed(int64(seed))
+}
+
+func magicCode() byte {
+	//nolint:gosec // Reproduce MagicCode from same secret seed
+	return byte(rand.Int63())
+}
+
+// shuffle randomizes order of the input string.
 func shuffle(s string) string {
 	r := []rune(s)
 	rand.Shuffle(len(r), func(i, j int) { r[i], r[j] = r[j], r[i] })
