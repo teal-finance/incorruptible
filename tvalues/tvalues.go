@@ -198,6 +198,39 @@ func (tv TValues) String(i int) (string, error) {
 	return string(tv.Values[i]), nil
 }
 
+func (tv TValues) Uint64IfAny(i int, defaultValue ...uint64) uint64 {
+	v, err := tv.Uint64(i)
+	if err != nil {
+		if len(defaultValue) == 0 {
+			return 0
+		}
+		return defaultValue[0]
+	}
+	return v
+}
+
+func (tv TValues) BoolIfAny(i int, defaultValue ...bool) bool {
+	v, err := tv.Bool(i)
+	if err != nil {
+		if len(defaultValue) == 0 {
+			return false
+		}
+		return defaultValue[0]
+	}
+	return v
+}
+
+func (tv TValues) StringIfAny(i int, defaultValue ...string) string {
+	v, err := tv.String(i)
+	if err != nil {
+		if len(defaultValue) == 0 {
+			return ""
+		}
+		return defaultValue[0]
+	}
+	return v
+}
+
 func (tv TValues) check(i int) error {
 	if i < 0 {
 		return fmt.Errorf("negative i=%d", i)
