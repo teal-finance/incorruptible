@@ -236,7 +236,7 @@ func TestDecode(t *testing.T) {
 
 			got, err := incorr.Decode(token)
 			if err != nil {
-				t.Errorf("Decode() error = %v", err)
+				t.Error("Decode() error = ", err)
 				return
 			}
 
@@ -260,15 +260,20 @@ func TestDecode(t *testing.T) {
 
 			cookie, err := incorr.NewCookieFromDT(c.tvalues)
 			if err != nil {
-				t.Errorf("NewCookie() %v", err)
+				t.Error("NewCookie() ", err)
 				return
 			}
 
 			err = cookie.Valid()
-			// https://github.com/golang/go/issues/52989
-			if err != nil && err.Error() != "http: invalid Cookie.Expires" {
-				t.Errorf("Invalid cookie: %v", err)
-				return
+			if cookie.Expires.IsZero() {
+				// https://github.com/golang/go/issues/52989
+				if err.Error() == "http: invalid Cookie.Expires" {
+					return
+				}
+				t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed: ", err)
+			}
+			if err != nil {
+				t.Error("Invalid cookie: ", err)
 			}
 		})
 	}
