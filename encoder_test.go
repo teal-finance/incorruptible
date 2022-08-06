@@ -258,7 +258,7 @@ func TestDecode(t *testing.T) {
 				t.Errorf("Mismatch Values got %v, want %v", got.Values, c.tvalues.Values)
 			}
 
-			cookie, err := incorr.NewCookieFromTV(c.tvalues)
+			cookie, err := incorr.NewCookieFromValues(c.tvalues)
 			if err != nil {
 				t.Error("NewCookie() ", err)
 				return

@@ -12,12 +12,13 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 
 	"github.com/teal-finance/incorruptible/aead"
 	"github.com/teal-finance/incorruptible/tvalues"
 
-	// baseN "github.com/teal-finance/BaseXX/base92" // toggle package with same interface.
+	// baseN "github.com/teal-finance/BaseXX/base92" // use another package with same interface.
 	baseN "github.com/mtraver/base91"
 )
 
@@ -41,7 +42,7 @@ func New(name string, urls []*url.URL, secretKey []byte, maxAge int, setIP bool,
 	if len(urls) == 0 {
 		log.Panic("No urls => Cannot set Cookie domain")
 	}
-	secure, dns, path := extractMainDomain(urls[0])
+	secure, dns, dir := extractMainDomain(urls[0])
 
 	cipher, err := aead.New(secretKey)
 	if err != nil {
@@ -59,7 +60,7 @@ func New(name string, urls []*url.URL, secretKey []byte, maxAge int, setIP bool,
 	incorr := Incorruptible{
 		writeErr: writeErr,
 		SetIP:    setIP,
-		cookie:   emptyCookie(name, secure, dns, path, maxAge),
+		cookie:   emptyCookie(name, secure, dns, dir, maxAge),
 		IsDev:    isLocalhost(urls),
 		cipher:   cipher,
 		magic:    magic,
@@ -138,7 +139,7 @@ func (incorr *Incorruptible) NewCookie(r *http.Request) (*http.Cookie, tvalues.T
 	return &cookie, tv, nil
 }
 
-func (incorr *Incorruptible) NewCookieFromTV(tv tvalues.TValues) (*http.Cookie, error) {
+func (incorr *Incorruptible) NewCookieFromValues(tv tvalues.TValues) (*http.Cookie, error) {
 	token, err := incorr.Encode(tv)
 	if err != nil {
 		return &incorr.cookie, err
@@ -165,7 +166,7 @@ const (
 	HTTPS = "https"
 )
 
-func extractMainDomain(u *url.URL) (secure bool, dns, path string) {
+func extractMainDomain(u *url.URL) (secure bool, dns, dir string) {
 	if u == nil {
 		log.Panic("No URL => Cannot set Cookie domain")
 	}
@@ -197,18 +198,40 @@ func isLocalhost(urls []*url.URL) bool {
 	return false
 }
 
-func emptyCookie(name string, secure bool, dns, path string, maxAge int) http.Cookie {
-	if path != "" && path[len(path)-1] == '/' {
-		path = path[:len(path)-1] // remove trailing slash
+func emptyCookie(name string, secure bool, dns, dir string, maxAge int) http.Cookie {
+	dir = path.Clean(dir)
+	if dir == "." {
+		dir = "/"
 	}
-	if path == "" {
-		path = "/"
+
+	if name == "" {
+		name = "session"
+		for i := len(dir) - 2; i >= 0; i-- {
+			if dir[i] == byte('/') {
+				name = dir[i+1:]
+				break
+			}
+		}
+	}
+
+	// cookie prefix for enhanced security
+	if secure && name[0] != '_' {
+		if dir == "/" {
+			// "__Host-" when cookie has "Secure" flag, has no "Domain",
+			// has "Path=/" and is sent from a secure origin.
+			dns = ""
+			name = "__Host-" + name
+		} else {
+			// "__Secure-" when cookie has "Secure" flag and is sent from a secure origin
+			// "__Host-" is better than the "__Secure-" prefix.
+			name = "__Secure-" + name
+		}
 	}
 
 	return http.Cookie{
 		Name:       name,
 		Value:      "", // emptyCookie because no token
-		Path:       path,
+		Path:       dir,
 		Domain:     dns,
 		Expires:    time.Time{},
 		RawExpires: "",
