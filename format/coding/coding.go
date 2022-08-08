@@ -8,9 +8,8 @@ package coding
 
 import (
 	"fmt"
+	"math/rand"
 	"net"
-
-	rand "github.com/zhangyunhao116/fastrand"
 )
 
 const (
@@ -72,10 +71,12 @@ func (meta Metadata) PayloadMinSize() int {
 	return ExpirySize + meta.ipLength() + meta.NValues()
 }
 
-// putHeader fills the magic code, the salt and the metadata.
+// PutHeader fills the magic code, the salt and the metadata.
+//
+//nolint:gosec // strong random generator not required here
 func (meta Metadata) PutHeader(buf []byte, magic uint8) {
 	buf[0] = magic
-	buf[1] = byte(rand.Intn(256)) // random salt
+	buf[1] = byte(rand.Int63()) // random salt
 	buf[2] = byte(meta)
 }
 

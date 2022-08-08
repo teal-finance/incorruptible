@@ -11,10 +11,9 @@ package format
 
 import (
 	"fmt"
-	"log"
+	"math/rand"
 
 	"github.com/klauspost/compress/s2"
-	rand "github.com/zhangyunhao116/fastrand"
 
 	"github.com/teal-finance/incorruptible/format/coding"
 	"github.com/teal-finance/incorruptible/tvalues"
@@ -62,7 +61,8 @@ func doesCompress(payloadSize int) bool {
 	case payloadSize < sizeMayCompress:
 		return false
 	case payloadSize < sizeMustCompress:
-		return (rand.Intn(1) == 0)
+		zeroOrOne := (rand.Int63() & 1)
+		return (zeroOrOne == 0)
 	default:
 		return true
 	}
