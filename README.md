@@ -1,7 +1,7 @@
 # 🍸 Incorruptible &emsp; &emsp; &emsp; [![GoDoc][i]][d] [![Go Report Card][b]][r]
 
 The **Incorruptible** project provides
-a safer, shorter, faster [Bearer Token][t]
+a safer, shorter and faster [Bearer Token][t]
 for session cookie and `Authorization` HTTP header.
 See the [limitations](#🚫-limitations).
 
@@ -23,11 +23,11 @@ See the [origin of the name](#🍸-name).
 ## 🎯 Target
 
 - **Safer**: State-of-the-art cipher configuration,
-  conveying of expiration time and client IP,
-  shuffled BasE91 alphabet, salt
-  and random padding.
+  including expiration time and client IP,
+  shuffled BasE91 alphabet,
+  random padding and salt.
 
-- **Shorter**: BasE91-encoded (shorter than Base64),
+- **Shorter**: BasE91 encoded (shorter than Base64),
   optimized data encoding (no string keys) and adaptive compression.
   The smallest token is 27 bytes long at default settings.
 
@@ -44,14 +44,14 @@ This is not very fast and generates large tokens:
 the long JSON string is converted into Base64 text,
 to which the signature stuff is appended.
 
-With the session cookie purpose, we are free to innovate.
+With the purpose of the session cookie purpose,
+we are free to innovate.
 We love challenges.
 As a hobby we tried to replace [gorilla/session][s].
 The result is _Incorruptible_. 🎉
 
 To make the implementation successful,
-we updated our security knowledge
-with recent state-of-the-art research.
+we updated our security knowledge to the latest research.
 We also benchmarked Base64/Ascii85/BasE91/Base92 encoders.
 We think we did a good job,
 with a good tradeoff between
@@ -62,20 +62,20 @@ security, performance and low bandwidth.
 
 ## 🤫 Usage
 
-Now, we use less JWT and more _Incorruptible_ tokens in production:
+Now we use less JWT and more _Incorruptible_ tokens in production:
 
-- JWT as an authentication provided by the [Quid][q] server (trusted third party).
+- JWT as authentication provided by the [Quid][q] server (trusted third party).
 - _Incorruptible_ as a session token (session cookie).
 
 ### JWT
 
 The **JWT** is well suited when multiple servers manage the authentication:
-it avoids sharing the private key.
-We use the good old RSA, with a [32-bytes] key (256 bits).
-The [Auth server][q] is the single holding the private key.
-Thus, the backend does manage the user login,
-because the signature provided by the authentication server is sufficient.
-So our backend can be moderately secure (does not hold user data).
+It avoids sharing the private key.
+We use the good old RSA with a [32-bytes] key (256 bits).
+The [Auth server][q] is the only one that owns the private key.
+Thus, the backend manages the user login,
+since the signature provided by the authentication server is sufficient.
+So our backend can be moderately secure (no user data).
 Only the authentication server requires high security
 (for example, we uninstall the SSH daemon on the machine).
 
@@ -84,26 +84,26 @@ Only the authentication server requires high security
 ### _Incorruptible_
 
 We use _Incorruptible_ when the backend manages alone
-its relationship with the frontend.
-The secret is known only by the backend
+its relationship with the frontend alone.
+The secret is known only to the backend
 (it does not need to be shared).
 
 ## 🔐 Encryption
 
-The current trend toward symmetric encryption
+The current trend towards symmetric encryption
 prefers ChaCha20 / Poly1305 (server-side).
 In addition to its cryptographic qualities,
 ChaCha20 is easy to configure and requires
 few CPU/memory resources.
 
-On the other hand, on AMD and Intel processors,
-AES is faster (optimized instructions).
-In addition, the Go crypto allows to configure
-AES in a simple and secure way.
+On the other hand, AES is faster
+on AMD/Intel processors (optimized instructions).
+In addition, the Go crypto allows
+easy and secure AES configuration.
 
 Currently, we plan to use only AMD/Intel hardware (this may change).
 Therefore, we currently prefer hardwired AES instructions
-than ChaCha20 / Poly1305 (as chosen by Wireguard).
+over ChaCha20 / Poly1305 (as chosen by Wireguard).
 
 We place more emphasis on mastering
 the encryption configuration than on performance.
@@ -113,10 +113,12 @@ Therefore, this package currently uses only AES-GCM.
 The key is 128 bits, since 256 bits are not yet relevant
 (this may also change).
 
-The encryption depends on standard Go only.
-The `"math/rand"` package is used when a strong random generator is not required.
-The user should call `rand.Seed()` to randomize the `"math/rand"` generator.
-In the future, _Incorruptible_ may use something like [fastrand] if relevant.
+The encryption depends only on standard Go library.
+The package `"math/rand"` is used when
+a strong random number generator is not needed.
+The user should call `rand.Seed()`
+to randomize the `"math/rand"` generator.
+In the future, _Incorruptible_ may use something like [fastrand].
 
 Please share your thoughts on security or other topics.
 
@@ -124,11 +126,11 @@ Please share your thoughts on security or other topics.
 
 ## 🍪 Encoding format
 
-The serialization uses a format
-designed for the specific _Incorruptible_ needs.
-The format is composed of:
+Serialization has been
+designed for the _Incorruptible_ needs.
+The format consists of:
 
-- Magic code (1 byte)
+- Magic Code (1 byte)
 - Random salt (1 byte)
 - Header bits (1 byte)
 - Expiration time (from 0 to 4 bytes)
@@ -141,30 +143,30 @@ See also <https://pkg.go.dev/github.com/teal-finance/incorruptible/format>.
 The precision of the expiration time is defined
 at build time with [constants in the source code][c2].
 The default encoding size is 24 bits,
-which gives a range of 10 years with an accuracy of 20 seconds.
+giving a range of 10 years with an accuracy of 20 seconds.
 The [configuration constants][c1]
-allow easy decrease/increase of the storage from 1 to 4 bytes,
+allow to easily decrease/increase of the storage from 1 to 4 bytes,
 reducing/improving the timing precision.
 
-A random 32-bits padding can also be appended.
+Random padding can also be appended.
 This feature is currently disabled,
-but can be activated [in the source code][c2].
+but can be enabled [in the source code][c2].
 
 If the token is too long, its payload
-is compressed using [Snappy S2][s2].
+is compressed with [Snappy S2][s2].
 
 [s2]: https://www.reddit.com/r/golang/comments/nziwb1/s2_fully_snappy_compatible_compression_faster_and/
 [c1]: https://github.com/teal-finance/incorruptible/blob/main/format/coding/expiry.go#L13
 [c2]: https://github.com/teal-finance/incorruptible/blob/main/format/marshal.go
 
-Then, the whole data bytes are encrypted with AES-GCM 128 bits.
-This encryption adds 16 bytes including the authentication bytes.
+Then, the entire data bytes are encrypted with AES-GCM 128 bits.
+This encryption adds 16 bytes, including the authentication bytes.
 
-Finally, the cipher-text is BasE91 encoded,
+Finally, the cipher-text is encoded with BasE91,
 which produces cookie-friendly tokens
 at the cost of increasing the size by 19% (³⁄₁₆).
-By comparison, Base64 and Ascii85 increase the size
-by 33% and 25% respectively.
+In comparison, Base64 and Ascii85 increase the size
+by 33% and 25%, respectively.
 
 In the end, the minimum required 3 bytes (Magic+Salt+Header)
 becomes a 27-bytes long _Incorruptible_ token (BasE91).
@@ -172,30 +174,32 @@ becomes a 27-bytes long _Incorruptible_ token (BasE91).
 ## 🚫 Limitations
 
 _Incorruptible_ works perfectly with a single server.
-The secrets can be stored in a data vault,
+Secrets can be stored in a data vault,
 or randomly generated at startup time.
 
-But, with multiple servers
+However, with multiple servers
 (load-balancer, authentication server)
 the encryption key must be shared.
 
-Secrets sharing is a weak link in the security chain.
-In this last case, JWT/CWT are preferable.
+In this last case, JWT/CWT are preferable,
+since sharing secrets is a weak link in the security chain.
+
 See also [Quid][q], a JWT authentication server
-with signatures verified by public keys.
+with public-key verified signatures.
 
 ## 🍸 Name
 
 The name _Incorruptible_ comes from the [incorruptible][c] drink,
-a [mocktail][m] containing lemonade, grapefruit, and orange juice.
+a [mocktail][m] with lemonade, grapefruit, and orange juice.
 
-The _Incorruptible_ project has been originally implemented
+The _Incorruptible_ project was originally implemented
 as part of the [Teal.Finance/Garcon][g] server.
 In French, "Garcon" _(garçon)_ is a 💁‍♂️ waiter,
-serving drinks to clients. 😉
+who serves drinks to clients. 😉
 
-We wanted a name for a drink without alcohol, using a single word,
-and understandable in different languages.
+We wanted a name for a drink without alcohol,
+that uses a single word,
+and could be understood in different languages.
 So _Incorruptible_ was our best choice at that time.
 
 [g]: https://github.com/teal-finance/garcon
@@ -203,7 +207,7 @@ So _Incorruptible_ was our best choice at that time.
 ## ✨ Contributions welcome
 
 This new project needs your help to get better.
-Please suggest your improvements,
+Please suggest your improvements
 or even further refactoring.
 
 We welcome contributions in many forms,
@@ -211,9 +215,9 @@ and there is always plenty to do!
 
 ## 🗣️ Feedback
 
-If you have some suggestions, or need a new feature,
-please contact us, by opening an [issue],
-or at Teal.Finance@pm.me /
+If you have some suggestions or need a new feature,
+please open an [issue]
+or contact us at Teal.Finance@pm.me /
 [@TealFinance](https://twitter.com/TealFinance).
 
 Feel free to [pull a request][pr] too.
@@ -233,7 +237,7 @@ SPDX-License-Identifier: MIT
 
 Teal.Finance/incorruptible is distributed
 in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; even without the implied warranty
+but WITHOUT ANY WARRANTY; without even the implied warranty
 of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the [LICENSE](LICENSE) file (alongside the source files)
