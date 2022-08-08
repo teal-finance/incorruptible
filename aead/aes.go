@@ -35,9 +35,8 @@ package aead
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"log"
-
-	rand "github.com/zhangyunhao116/fastrand"
 )
 
 type Cipher struct {
