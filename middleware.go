@@ -19,7 +19,7 @@ import (
 // The "session" cookie (that is added in the response) contains a minimalist "incorruptible" token.
 // Finally, Set stores the decoded token in the request context.
 func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
-	log.Printf("Middleware IncorruptibleSet cookie %q MaxAge=%v setIP=%v",
+	log.Printf("INF Middleware IncorruptibleSet cookie %q MaxAge=%v setIP=%v",
 		incorr.cookie.Name, incorr.cookie.MaxAge, incorr.SetIP)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +28,7 @@ func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
 			// no valid token found => set a new token
 			cookie, newDT, err := incorr.NewCookie(r)
 			if err != nil {
-				log.Print("Middleware IncorruptibleSet ", err)
+				log.Print("ERR Middleware IncorruptibleSet ", err)
 				return
 			}
 			http.SetCookie(w, cookie)
@@ -44,7 +44,7 @@ func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
 // Chk finally stores the decoded token in the request context.
 // In dev. mode, Chk accepts requests without valid cookie but does not store invalid tokens.
 func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
-	log.Print("Middleware IncorruptibleChk cookie DevMode=", incorr.IsDev)
+	log.Print("INF Middleware IncorruptibleChk cookie DevMode=", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tv, err := incorr.DecodeCookieToken(r)
@@ -66,7 +66,7 @@ func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
 // Vet finally stores the decoded token in the request context.
 // In dev. mode, Vet accepts requests without a valid token but does not store invalid tokens.
 func (incorr *Incorruptible) Vet(next http.Handler) http.Handler {
-	log.Print("Middleware IncorruptibleVet cookie/bearer DevMode=", incorr.IsDev)
+	log.Print("INF Middleware IncorruptibleVet cookie/bearer DevMode=", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tv, err := incorr.DecodeToken(r)
@@ -202,6 +202,6 @@ func trimBearerScheme(auth string) (string, error) {
 
 func printDebug(str string, err error) {
 	if doPrint {
-		log.Printf("Incorr%s: %v", str, err)
+		log.Printf("DBG Incorr%s: %v", str, err)
 	}
 }

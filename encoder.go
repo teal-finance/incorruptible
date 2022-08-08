@@ -54,9 +54,10 @@ func (incorr *Incorruptible) Encode(tv tvalues.TValues) (string, error) {
 }
 
 func (incorr *Incorruptible) Decode(str string) (tvalues.TValues, error) {
+	var tv tvalues.TValues
+
 	printS("Decode BaseXX", str)
 
-	var tv tvalues.TValues
 	if len(str) < Base91MinSize {
 		return tv, fmt.Errorf("BaseXX string too short: %d < min=%d", len(str), Base91MinSize)
 	}
@@ -94,7 +95,7 @@ func printS(name, s string) {
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("Incorr%s len=%d %q", name, len(s), s[:n])
+		log.Printf("DBG Incorr%s len=%d %q", name, len(s), s[:n])
 	}
 }
 
@@ -105,14 +106,14 @@ func printB(name string, buf []byte) {
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("Incorr%s len=%d cap=%d %x", name, len(buf), cap(buf), buf[:n])
+		log.Printf("DBG Incorr%s len=%d cap=%d %x", name, len(buf), cap(buf), buf[:n])
 	}
 }
 
 // printV prints TValues in debug mode (when doPrint is true).
 func printV(name string, tv tvalues.TValues, err error) {
 	if doPrint {
-		log.Printf("Incorr%s tv %v %v n=%d err=%s", name,
+		log.Printf("DBG Incorr%s tv %v %v n=%d err=%s", name,
 			time.Unix(tv.Expires, 0), tv.IP, len(tv.Values), err)
 	}
 }

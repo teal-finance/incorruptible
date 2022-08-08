@@ -236,7 +236,7 @@ func TestDecode(t *testing.T) {
 
 			got, err := incorr.Decode(token)
 			if err != nil {
-				t.Error("Decode() error = ", err)
+				t.Error("Decode() error =", err)
 				return
 			}
 
@@ -260,7 +260,7 @@ func TestDecode(t *testing.T) {
 
 			cookie, err := incorr.NewCookieFromValues(c.tvalues)
 			if err != nil {
-				t.Error("NewCookie() ", err)
+				t.Error("NewCookie()", err)
 				return
 			}
 
@@ -273,7 +273,7 @@ func TestDecode(t *testing.T) {
 				t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed: ", err)
 			}
 			if err != nil {
-				t.Error("Invalid cookie: ", err)
+				t.Error("Invalid cookie:", err)
 			}
 		})
 	}
