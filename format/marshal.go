@@ -21,10 +21,6 @@ import (
 )
 
 const (
-	EnablePadding  = false
-	paddingStep    = 8
-	paddingMaxSize = 3 * paddingStep // result must be less than 256 bytes
-
 	sizeMayCompress  = 50 // by experience, cannot be below than 24 bytes
 	sizeMustCompress = 99
 )
@@ -59,6 +55,8 @@ func newSerializer(tv tvalues.TValues) Serializer {
 // doesCompress decides to compress or not the payload.
 // The compression decision is a bit randomized
 // to limit the "chosen plainText" attack.
+//
+//nolint:gosec // strong random generator not required here
 func doesCompress(payloadSize int) bool {
 	switch {
 	case payloadSize < sizeMayCompress:
@@ -142,24 +140,4 @@ func (s Serializer) appendValues(buf []byte, tv tvalues.TValues) ([]byte, error)
 		buf = append(buf, v...)
 	}
 	return buf, nil
-}
-
-// appendPadding adds random padding bytes.
-func (s *Serializer) appendPadding(buf []byte) []byte {
-	trailing := len(buf) % paddingStep
-	missing := paddingStep - trailing
-	missing += paddingStep * rand.Intn(paddingMaxSize/paddingStep-1)
-
-	for i := 1; i < missing; i++ {
-		buf = append(buf, uint8(rand.Intn(256)))
-	}
-
-	if missing > 255 {
-		log.Panic("cannot append more than 255 padding bytes got=", missing)
-	}
-
-	// last byte is the padding length
-	buf = append(buf, uint8(missing))
-
-	return buf
 }

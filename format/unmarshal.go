@@ -96,18 +96,8 @@ func parseValues(buf []byte, nV int) ([][]byte, error) {
 	return values, nil
 }
 
-func dropPadding(buf []byte) ([]byte, error) {
-	paddingSize := int(buf[len(buf)-1]) // last byte is the padding length
-	if paddingSize > paddingMaxSize {
-		return nil, fmt.Errorf("too much padding bytes (%d)", paddingSize)
-	}
-
-	buf = buf[:len(buf)-paddingSize] // drop padding
-	return buf, nil
-}
-
 func printDebug(name string, buf []byte) {
 	if doPrint {
-		log.Printf("Incorr%s len=%d", name, len(buf))
+		log.Printf("DBG Incorr%s len=%d", name, len(buf))
 	}
 }
