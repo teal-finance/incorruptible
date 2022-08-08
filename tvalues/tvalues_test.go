@@ -62,8 +62,7 @@ func TestToken_Uint64(t *testing.T) {
 		// duplicate case data to enable parallel testing
 		c := c
 		if c.tv.Values != nil {
-			var newSlice [][]byte
-			c.tv.Values = append(newSlice, c.tv.Values...)
+			c.tv.Values = append([][]byte(nil), c.tv.Values...)
 		}
 
 		t.Run(c.name, func(t *testing.T) {
@@ -92,8 +91,7 @@ func TestToken_Bool(t *testing.T) {
 		// duplicate case data to enable parallel testing
 		c := c
 		if c.tv.Values != nil {
-			var newSlice [][]byte
-			c.tv.Values = append(newSlice, c.tv.Values...)
+			c.tv.Values = append([][]byte(nil), c.tv.Values...)
 		}
 
 		t.Run(c.name, func(t *testing.T) {
@@ -124,8 +122,7 @@ func TestToken_String(t *testing.T) {
 		// duplicate case data to enable parallel testing
 		c := c
 		if c.tv.Values != nil {
-			var newSlice [][]byte
-			c.tv.Values = append(newSlice, c.tv.Values...)
+			c.tv.Values = append([][]byte(nil), c.tv.Values...)
 		}
 
 		t.Run(c.name, func(t *testing.T) {
