@@ -19,10 +19,15 @@ import (
 )
 
 const (
+	// Base91MinSize and ciphertextMinSize need to be adapted according
+	// on any change about expiry encoding size, padding size….
 	Base91MinSize     = 27
 	ciphertextMinSize = 22
 
-	// no space, no double-quote ", no semi-colon ; and no back-slash \.
+	// noSpaceDoubleQuoteSemicolon exclude character not welcome in cookie token:
+	// space, double-quote ", semi-colon ; and back-slash \
+	// This Base91 encoding alphabet is shuffled at startup time
+	// using the (secret) encryption key.
 	noSpaceDoubleQuoteSemicolon = "" +
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
 		"abcdefghijklmnopqrstuvwxyz" +

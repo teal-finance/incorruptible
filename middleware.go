@@ -152,7 +152,7 @@ func (incorr *Incorruptible) CookieToken(r *http.Request) (string, error) {
 		return "", err
 	}
 
-	// TODO: Add some other tests, but this may break specific usage:
+	// TODO: Add other verifications, but do not break specific usages.
 	// if !cookie.HttpOnly {
 	// 	return "", errors.New("no HttpOnly cookie")
 	// }

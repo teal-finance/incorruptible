@@ -155,7 +155,7 @@ func (incorr *Incorruptible) NewCookieFromToken(token string, maxAge int) *http.
 	return &cookie
 }
 
-// Cookie returns the internal cookie (used for test purpose).
+// Cookie returns a default cookie to facilitate testing.
 func (incorr *Incorruptible) Cookie(_ int) *http.Cookie {
 	return &incorr.cookie
 }
