@@ -151,6 +151,15 @@ func (tv TValues) Uint64(i int) (uint64, error) {
 	return coding.BytesToUint64(tv.Values[i])
 }
 
+func (tv *TValues) SetInt64(i int, v int64) error {
+	return tv.SetUint64(i, uint64(v))
+}
+
+func (tv TValues) Int64(i int) (int64, error) {
+	v, err := tv.Uint64(i)
+	return int64(v), err
+}
+
 func (tv *TValues) SetBool(i int, value bool) error {
 	if err := tv.check(i); err != nil {
 		return err
@@ -207,6 +216,11 @@ func (tv TValues) Uint64IfAny(i int, defaultValue ...uint64) uint64 {
 		return defaultValue[0]
 	}
 	return v
+}
+
+func (tv TValues) Int64IfAny(i int, defaultValue ...uint64) int64 {
+	v := tv.Uint64IfAny(i, defaultValue...)
+	return int64(v)
 }
 
 func (tv TValues) BoolIfAny(i int, defaultValue ...bool) bool {
