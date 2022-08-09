@@ -180,14 +180,13 @@ func (tv TValues) Bool(i int) (bool, error) {
 	}
 
 	b := tv.Values[i]
-
 	switch len(b) {
-	default:
-		return false, fmt.Errorf("too much bytes (length=%d) for a boolean", len(b))
-	case 1:
-		return true, nil
 	case 0:
 		return false, nil
+	case 1:
+		return true, nil
+	default:
+		return false, fmt.Errorf("got %d bytes but want only 0 or 1 byte for boolean encoding", len(b))
 	}
 }
 
