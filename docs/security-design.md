@@ -1,7 +1,8 @@
-# Package `aead`
+# Security Design
 
-Simple and safe functions `Encrypt()` and `Decrypt()` for
-AEAD (Authenticated Encryption with Associated Data).
+The Incorruptible package provides a Cipher
+with simple and safe functions `Encrypt()` and `Decrypt()` for
+AEAD (Authenticated Encryption with Associated Data).  
 See <https://wikiless.org/wiki/Authenticated_encryption>.
 
 ## Inspiration
@@ -35,10 +36,10 @@ Your feedback or suggestions are welcome, please contact us.
 
 ## Principles
 
-This package follows the Golang Cryptography Principles
+The Incorruptible aims to follow the Golang Cryptography Principles:  
 <https://golang.org/design/cryptography-principles>
 
-1. Secure implementation,
-2. Faultlessly configurable,
-3. Performant and
-4. State-of-the-art updated.
+1. Secure implementation
+2. Faultlessly configurable
+3. Performant
+4. State-of-the-art updated

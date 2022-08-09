@@ -120,6 +120,8 @@ The user should call `rand.Seed()`
 to randomize the `"math/rand"` generator.
 In the future, _Incorruptible_ may use something like [fastrand].
 
+Read more about our [security design](docs/security-design.md).
+
 Please share your thoughts on security or other topics.
 
 [fastrand]: https://github.com/zhangyunhao116/fastrand
