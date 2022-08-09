@@ -10,8 +10,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
-	"github.com/teal-finance/incorruptible/tvalues"
 )
 
 // Set puts a "session" cookie when the request has no valid "incorruptible" token.
@@ -52,7 +50,7 @@ func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
 		case err == nil: // OK: put the token in the request context
 			r = tv.ToCtx(r)
 		case incorr.IsDev:
-			printDebug("Chk DevMode no cookie", err)
+			printErr("Chk DevMode no cookie", err)
 		default:
 			incorr.writeErr(w, r, http.StatusUnauthorized, err)
 			return
@@ -81,8 +79,8 @@ func (incorr *Incorruptible) Vet(next http.Handler) http.Handler {
 	})
 }
 
-func (incorr *Incorruptible) DecodeToken(r *http.Request) (tvalues.TValues, []any) {
-	var tv tvalues.TValues
+func (incorr *Incorruptible) DecodeToken(r *http.Request) (TValues, []any) {
+	var tv TValues
 	var err [2]error
 
 	for i := 0; i < 2; i++ {
@@ -96,7 +94,7 @@ func (incorr *Incorruptible) DecodeToken(r *http.Request) (tvalues.TValues, []an
 			continue
 		}
 		if incorr.equalMinimalistToken(base91) {
-			return tvalues.New(), nil
+			return NewTValues(), nil
 		}
 		if tv, err[i] = incorr.Decode(base91); err[i] != nil {
 			continue
@@ -115,13 +113,13 @@ func (incorr *Incorruptible) DecodeToken(r *http.Request) (tvalues.TValues, []an
 	}
 }
 
-func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (tvalues.TValues, error) {
+func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (TValues, error) {
 	base91, err := incorr.CookieToken(r)
 	if err != nil {
-		return tvalues.TValues{}, err
+		return TValues{}, err
 	}
 	if incorr.equalMinimalistToken(base91) {
-		return tvalues.New(), nil
+		return NewTValues(), nil
 	}
 	tv, err := incorr.Decode(base91)
 	if err != nil {
@@ -130,13 +128,13 @@ func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (tvalues.TValues
 	return tv, tv.Valid(r)
 }
 
-func (incorr *Incorruptible) DecodeBearerToken(r *http.Request) (tvalues.TValues, error) {
+func (incorr *Incorruptible) DecodeBearerToken(r *http.Request) (TValues, error) {
 	base91, err := incorr.BearerToken(r)
 	if err != nil {
-		return tvalues.TValues{}, err
+		return TValues{}, err
 	}
 	if incorr.equalMinimalistToken(base91) {
-		return tvalues.New(), nil
+		return NewTValues(), nil
 	}
 	tv, err := incorr.Decode(base91)
 	if err != nil {
@@ -200,7 +198,7 @@ func trimBearerScheme(auth string) (string, error) {
 	return tokenBase91, nil
 }
 
-func printDebug(str string, err error) {
+func printErr(str string, err error) {
 	if doPrint {
 		log.Printf("DBG Incorr%s: %v", str, err)
 	}

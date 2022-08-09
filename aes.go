@@ -3,11 +3,25 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-// Package aead provides Encrypt() and Decrypt() for
-// AEAD (Authenticated Encryption with Associated Data).
-// see https://wikiless.org/wiki/Authenticated_encryption
+package incorruptible
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"log"
+)
+
+type Cipher struct {
+	gcm   cipher.AEAD
+	nonce []byte
+}
+
+// NewAESCipher creates a cipher with Encrypt() and Decrypt() functions
+// for AEAD (Authenticated Encryption with Associated Data).
 //
-// This package has been inspired from:
+// Implementation is based on:
+// - https://wikiless.org/wiki/Authenticated_encryption
 // - https://go.dev/blog/tls-cipher-suites
 // - https://github.com/gtank/cryptopasta
 //
@@ -30,25 +44,11 @@
 // https://golang.org/design/cryptography-principles
 // Secure implementation, faultlessly configurable,
 // performant and state-of-the-art updated.
-package aead
-
-import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-	"log"
-)
-
-type Cipher struct {
-	gcm   cipher.AEAD
-	nonce []byte
-}
-
-// prefer 16 bytes (AES-128, faster) over 32 (AES-256, irrelevant extra security).
-func New(secretKey []byte) (Cipher, error) {
+func NewAESCipher(secretKey []byte) (Cipher, error) {
 	var c Cipher
 
 	if len(secretKey) != 16 {
+		// prefer 16 bytes (AES-128, faster) over 32 (AES-256, irrelevant extra security).
 		log.Panic("Want 128-bit AES key containing 16 bytes, but got ", len(secretKey))
 	}
 

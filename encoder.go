@@ -12,10 +12,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-
-	"github.com/teal-finance/incorruptible/format"
-	"github.com/teal-finance/incorruptible/format/coding"
-	"github.com/teal-finance/incorruptible/tvalues"
 )
 
 const (
@@ -36,10 +32,10 @@ const (
 	doPrint = false
 )
 
-func (incorr *Incorruptible) Encode(tv tvalues.TValues) (string, error) {
+func (incorr *Incorruptible) Encode(tv TValues) (string, error) {
 	printV("Encode", tv, errors.New(""))
 
-	plainText, err := format.Marshal(tv, incorr.magic)
+	plainText, err := Marshal(tv, incorr.magic)
 	if err != nil {
 		return "", err
 	}
@@ -53,8 +49,8 @@ func (incorr *Incorruptible) Encode(tv tvalues.TValues) (string, error) {
 	return str, nil
 }
 
-func (incorr *Incorruptible) Decode(str string) (tvalues.TValues, error) {
-	var tv tvalues.TValues
+func (incorr *Incorruptible) Decode(str string) (TValues, error) {
+	var tv TValues
 
 	printS("Decode BaseXX", str)
 
@@ -78,12 +74,12 @@ func (incorr *Incorruptible) Decode(str string) (tvalues.TValues, error) {
 	}
 	printB("Decode plainText", plainText)
 
-	magic := coding.MagicCode(plainText)
+	magic := MagicCode(plainText)
 	if magic != incorr.magic {
 		return tv, errors.New("bad magic code")
 	}
 
-	tv, err = format.Unmarshal(plainText)
+	tv, err = Unmarshal(plainText)
 	printV("Decode", tv, err)
 	return tv, err
 }
@@ -111,7 +107,7 @@ func printB(name string, buf []byte) {
 }
 
 // printV prints TValues in debug mode (when doPrint is true).
-func printV(name string, tv tvalues.TValues, err error) {
+func printV(name string, tv TValues, err error) {
 	if doPrint {
 		log.Printf("DBG Incorr%s tv %v %v n=%d err=%s", name,
 			time.Unix(tv.Expires, 0), tv.IP, len(tv.Values), err)

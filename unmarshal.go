@@ -3,29 +3,24 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-package format
+package incorruptible
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/klauspost/compress/s2"
-
-	"github.com/teal-finance/incorruptible/format/coding"
-	"github.com/teal-finance/incorruptible/tvalues"
 )
 
-const doPrint = false
-
-func Unmarshal(buf []byte) (tvalues.TValues, error) {
+func Unmarshal(buf []byte) (TValues, error) {
 	printDebug("Unmarshal", buf)
 
-	if len(buf) < coding.HeaderSize+coding.ExpirySize {
-		return tvalues.TValues{}, fmt.Errorf("not enough bytes (%d) for header+expiry", len(buf))
+	if len(buf) < HeaderSize+ExpirySize {
+		return TValues{}, fmt.Errorf("not enough bytes (%d) for header+expiry", len(buf))
 	}
 
-	meta := coding.GetMetadata(buf)
-	buf = buf[coding.HeaderSize:] // drop header
+	meta := GetMetadata(buf)
+	buf = buf[HeaderSize:] // drop header
 
 	printDebug("Unmarshal Metadata", buf)
 
@@ -33,7 +28,7 @@ func Unmarshal(buf []byte) (tvalues.TValues, error) {
 		var err error
 		buf, err = dropPadding(buf)
 		if err != nil {
-			return tvalues.TValues{}, err
+			return TValues{}, err
 		}
 		printDebug("Unmarshal Padding", buf)
 	}
@@ -42,17 +37,17 @@ func Unmarshal(buf []byte) (tvalues.TValues, error) {
 		var err error
 		buf, err = s2.Decode(nil, buf)
 		if err != nil {
-			return tvalues.TValues{}, fmt.Errorf("s2.Decode %w", err)
+			return TValues{}, fmt.Errorf("s2.Decode %w", err)
 		}
 		printDebug("Unmarshal Uncompress", buf)
 	}
 
 	if len(buf) < meta.PayloadMinSize() {
-		return tvalues.TValues{}, fmt.Errorf("not enough bytes for payload %d < %d", len(buf), meta.PayloadMinSize())
+		return TValues{}, fmt.Errorf("not enough bytes for payload %d < %d", len(buf), meta.PayloadMinSize())
 	}
 
-	var tv tvalues.TValues
-	buf, tv.Expires = coding.DecodeExpiry(buf)
+	var tv TValues
+	buf, tv.Expires = DecodeExpiry(buf)
 	buf, tv.IP = meta.DecodeIP(buf)
 
 	printDebug("Unmarshal Expiry IP", buf)

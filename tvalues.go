@@ -3,8 +3,7 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-// Package tvalues (Token Values) represents the decoded form of a "session" token.
-package tvalues
+package incorruptible
 
 import (
 	"context"
@@ -21,14 +20,15 @@ const (
 	secondsPerYear   = 365.2425 * secondsPerDay // = 31556952 = average including leap years
 )
 
+// TValues (Token Values) represents the decoded form of an Incorruptible token.
 type TValues struct {
 	Expires int64  // Unix time UTC (seconds since 1970)
 	IP      net.IP // TOTO: use netip.Addr
 	Values  [][]byte
 }
 
-// New returns an empty TValues that can be used to generate a minimalist token.
-func New() TValues {
+// NewTValues returns an empty TValues that can be used to generate a minimalist token.
+func NewTValues() TValues {
 	return TValues{Expires: 0, IP: nil, Values: nil}
 }
 

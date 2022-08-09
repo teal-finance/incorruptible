@@ -3,20 +3,13 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-// Package format serialize a TValues in a short way.
-// The format starts with a magic code (2 bytes),
-// followed by the expiry time, the client IP, the user-defined values,
-// and ends with random salt as padding for a final size aligned on 32 bits.
-package format
+package incorruptible
 
 import (
 	"fmt"
 	"math/rand"
 
 	"github.com/klauspost/compress/s2"
-
-	"github.com/teal-finance/incorruptible/format/coding"
-	"github.com/teal-finance/incorruptible/tvalues"
 )
 
 const (
@@ -32,7 +25,7 @@ type Serializer struct {
 	compressed   bool
 }
 
-func newSerializer(tv tvalues.TValues) Serializer {
+func newSerializer(tv TValues) Serializer {
 	var s Serializer
 
 	s.ipLength = len(tv.IP) // can be 0, 4 or 16
@@ -44,7 +37,7 @@ func newSerializer(tv tvalues.TValues) Serializer {
 		s.valTotalSize += len(v)
 	}
 
-	s.payloadSize = coding.ExpirySize + s.ipLength + s.valTotalSize
+	s.payloadSize = ExpirySize + s.ipLength + s.valTotalSize
 
 	s.compressed = doesCompress(s.payloadSize)
 
@@ -68,7 +61,11 @@ func doesCompress(payloadSize int) bool {
 	}
 }
 
-func Marshal(tv tvalues.TValues, magic uint8) ([]byte, error) {
+// Marshal serializes a TValues in a short way.
+// The format starts with a magic code (2 bytes),
+// followed by the expiry time, the client IP, the user-defined values,
+// and ends with random salt as padding for a final size aligned on 32 bits.
+func Marshal(tv TValues, magic uint8) ([]byte, error) {
 	s := newSerializer(tv)
 
 	b, err := s.putHeaderExpiryIP(magic, tv)
@@ -80,17 +77,17 @@ func Marshal(tv tvalues.TValues, magic uint8) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(b) != coding.HeaderSize+s.payloadSize {
-		return nil, fmt.Errorf("unexpected length got=%d want=%d", len(b), coding.HeaderSize+s.payloadSize)
+	if len(b) != HeaderSize+s.payloadSize {
+		return nil, fmt.Errorf("unexpected length got=%d want=%d", len(b), HeaderSize+s.payloadSize)
 	}
 
 	if s.compressed {
-		c := s2.Encode(nil, b[coding.HeaderSize:])
-		n := copy(b[coding.HeaderSize:], c)
+		c := s2.Encode(nil, b[HeaderSize:])
+		n := copy(b[HeaderSize:], c)
 		if n != len(c) {
 			return nil, fmt.Errorf("unexpected copied bytes got=%d want=%d", n, len(c))
 		}
-		b = b[:coding.HeaderSize+n]
+		b = b[:HeaderSize+n]
 	}
 
 	if EnablePadding {
@@ -101,7 +98,7 @@ func Marshal(tv tvalues.TValues, magic uint8) ([]byte, error) {
 }
 
 func (s Serializer) allocateBuffer() []byte {
-	length := coding.HeaderSize + coding.ExpirySize
+	length := HeaderSize + ExpirySize
 	capacity := length + s.ipLength + s.valTotalSize
 
 	if EnablePadding {
@@ -111,27 +108,27 @@ func (s Serializer) allocateBuffer() []byte {
 	return make([]byte, length, capacity)
 }
 
-func (s Serializer) putHeaderExpiryIP(magic uint8, tv tvalues.TValues) ([]byte, error) {
+func (s Serializer) putHeaderExpiryIP(magic uint8, tv TValues) ([]byte, error) {
 	b := s.allocateBuffer()
 
-	m, err := coding.NewMetadata(s.ipLength, s.compressed, s.nValues)
+	m, err := NewMetadata(s.ipLength, s.compressed, s.nValues)
 	if err != nil {
 		return nil, err
 	}
 
 	m.PutHeader(b, magic)
 
-	err = coding.PutExpiry(b, tv.Expires)
+	err = PutExpiry(b, tv.Expires)
 	if err != nil {
 		return nil, err
 	}
 
-	b = coding.AppendIP(b, tv.IP)
+	b = AppendIP(b, tv.IP)
 
 	return b, nil
 }
 
-func (s Serializer) appendValues(buf []byte, tv tvalues.TValues) ([]byte, error) {
+func (s Serializer) appendValues(buf []byte, tv TValues) ([]byte, error) {
 	for _, v := range tv.Values {
 		if len(v) > 255 {
 			return nil, fmt.Errorf("too large %d > 255", v)

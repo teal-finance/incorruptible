@@ -3,14 +3,11 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-// Package tvalues (Token Values) represents the decoded form of a "session" token.
-package tvalues
+package incorruptible
 
 import (
 	"fmt"
 	"strconv"
-
-	"github.com/teal-finance/incorruptible/format/coding"
 )
 
 // Get / Set for multiple fields at the same timeout
@@ -41,14 +38,14 @@ func (tv TValues) Uint64(key int) (uint64, error) {
 	if err := tv.checkRead(key); err != nil {
 		return 0, err
 	}
-	return coding.BytesToUint64(tv.Values[key])
+	return BytesToUint64(tv.Values[key])
 }
 
 func (tv *TValues) SetUint64(key int, val uint64) error {
 	if err := checkWrite(key); err != nil {
 		return err
 	}
-	b := coding.Uint64ToBytes(val)
+	b := Uint64ToBytes(val)
 	tv.set(key, b)
 	return nil
 }
@@ -255,8 +252,8 @@ func checkWrite(key int) error {
 	if key < 0 {
 		return fmt.Errorf("key=%d must not be negative", key)
 	}
-	if key > coding.MaxValues {
-		return fmt.Errorf("key=%d is over max=%d storage", coding.MaxValues, key)
+	if key > MaxValues {
+		return fmt.Errorf("key=%d is over max=%d storage", MaxValues, key)
 	}
 	return nil
 }
@@ -278,7 +275,7 @@ func (tv *TValues) set(key int, buf []byte) {
 	}
 
 	if key >= cap(tv.Values) {
-		values := make([][]byte, coding.MaxValues+1)
+		values := make([][]byte, MaxValues+1)
 		copy(values, tv.Values)
 		tv.Values = values
 	}

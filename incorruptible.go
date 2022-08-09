@@ -15,9 +15,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/teal-finance/incorruptible/aead"
-	"github.com/teal-finance/incorruptible/tvalues"
-
 	// baseN "github.com/teal-finance/BaseXX/base92" // use another package with same interface.
 	baseN "github.com/mtraver/base91"
 )
@@ -27,7 +24,7 @@ type Incorruptible struct {
 	SetIP    bool // If true => put the remote IP in the token.
 	cookie   http.Cookie
 	IsDev    bool
-	cipher   aead.Cipher
+	cipher   Cipher
 	magic    byte
 	baseN    *baseN.Encoding
 }
@@ -44,7 +41,7 @@ func New(name string, urls []*url.URL, secretKey []byte, maxAge int, setIP bool,
 	}
 	secure, dns, dir := extractMainDomain(urls[0])
 
-	cipher, err := aead.New(secretKey)
+	cipher, err := NewAESCipher(secretKey)
 	if err != nil {
 		log.Panic("AES NewCipher ", err)
 	}
@@ -77,7 +74,7 @@ func (incorr *Incorruptible) addMinimalistToken() {
 
 	// serialize a minimalist token
 	// including encryption and Base91-encoding
-	token, err := incorr.Encode(tvalues.New())
+	token, err := incorr.Encode(NewTValues())
 	if err != nil {
 		log.Panic("addMinimalistToken ", err)
 	}
@@ -117,9 +114,9 @@ func shuffle(s string) string {
 
 // NewCookie creates a new cookie based on default values.
 // the HTTP request parameter is used to get the remote IP (only when incorr.SetIP is true).
-func (incorr *Incorruptible) NewCookie(r *http.Request) (*http.Cookie, tvalues.TValues, error) {
+func (incorr *Incorruptible) NewCookie(r *http.Request) (*http.Cookie, TValues, error) {
 	cookie := incorr.cookie // local copy of the default cookie
-	tv := tvalues.New()
+	tv := NewTValues()
 
 	if !incorr.useMinimalistToken() {
 		tv.SetExpiry(cookie.MaxAge)
@@ -139,7 +136,7 @@ func (incorr *Incorruptible) NewCookie(r *http.Request) (*http.Cookie, tvalues.T
 	return &cookie, tv, nil
 }
 
-func (incorr *Incorruptible) NewCookieFromValues(tv tvalues.TValues) (*http.Cookie, error) {
+func (incorr *Incorruptible) NewCookieFromValues(tv TValues) (*http.Cookie, error) {
 	token, err := incorr.Encode(tv)
 	if err != nil {
 		return &incorr.cookie, err

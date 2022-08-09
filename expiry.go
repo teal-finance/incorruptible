@@ -3,7 +3,7 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-package coding
+package incorruptible
 
 import (
 	"fmt"
@@ -25,14 +25,9 @@ const (
 
 	internalToUnix = (ExpiryStartYear - 1970) * secondsPerYear
 	unixToInternal = -internalToUnix
-
-	secondsPerMinute = 60
-	secondsPerHour   = 60 * secondsPerMinute
-	secondsPerDay    = 24 * secondsPerHour      // = 86400
-	secondsPerYear   = 365.2425 * secondsPerDay // = 31556952 = average including leap years
 )
 
-// unixToInternalExpiry converts Unix time to the internal 3-byte coding.
+// unixToInternalExpiry converts Unix time to the internal 3-byte.
 func unixToInternalExpiry(unix int64) (uint32, error) {
 	if unix == 0 {
 		return 0, nil

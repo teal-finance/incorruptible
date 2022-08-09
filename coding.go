@@ -3,8 +3,7 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-// Package coding works on the byte encoding low-level.
-package coding
+package incorruptible
 
 import (
 	"fmt"
@@ -37,6 +36,7 @@ func GetMetadata(buf []byte) Metadata {
 	return Metadata(buf[2])
 }
 
+// NewMetadata sets the metadata bits within the token.
 func NewMetadata(ipLength int, compressed bool, nValues int) (Metadata, error) {
 	var meta byte
 
@@ -127,6 +127,7 @@ func (meta Metadata) DecodeIP(buf []byte) ([]byte, net.IP) {
 	return buf[n:], ip
 }
 
+// Uint64ToBytes works on the byte-level encoding of the Incorruptible token.
 func Uint64ToBytes(v uint64) []byte {
 	switch {
 	case v == 0:

@@ -7,63 +7,54 @@ package incorruptible_test
 
 import (
 	"net"
-	"net/url"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/teal-finance/incorruptible"
 )
 
-func TestDecode(t *testing.T) {
+func TestUnmarshal(t *testing.T) {
 	t.Parallel()
 
-	for _, c := range encoderDataCases {
+	for _, c := range codingDataCases {
 		c := c
-
-		u, err := url.Parse("http://host:8080/path/url")
-		if err != nil {
-			t.Error("url.Parse() error", err)
-			return
-		}
-
-		key := [16]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6}
-
-		incorr := incorruptible.New("session", []*url.URL{u}, key[:], 0, true, nil)
 
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
 			c.tv.ShortenIP4Length()
 
-			token, err := incorr.Encode(c.tv)
-			if (err == nil) && c.wantErr {
-				t.Errorf("Encode() no error but want an error")
-				return
-			}
-			if (err != nil) && !c.wantErr {
-				t.Errorf("Encode() err=%v, want no error", err)
-				return
-			}
-			if err != nil {
-				t.Log("Encode() OK err=", err)
+			b, err := incorruptible.Marshal(c.tv, c.magic)
+			if (err == nil) == c.wantErr {
+				t.Errorf("Marshal() error = %v, wantErr %v", err, c.wantErr)
 				return
 			}
 
-			n := len(token)
-			t.Log("len(token) =", n)
-			if n < incorruptible.Base91MinSize {
-				t.Error("len(token) < Base91MinSize =", incorruptible.Base91MinSize)
+			t.Log("len(b)", len(b))
+
+			n := len(b)
+			if n == 0 {
 				return
 			}
 			if n > 70 {
-				n = 70 // print max the first 70 characters
+				n = 70 // print max the first 70 bytes
 			}
-			t.Logf("str len=%d [:%d]=%q", len(token), n, token[:n])
+			t.Logf("b[:%d] %v", n, b[:n])
 
-			got, err := incorr.Decode(token)
+			magic := incorruptible.MagicCode(b)
+			if magic != c.magic {
+				t.Errorf("MagicCode() got = %x, want = %x", magic, c.magic)
+				return
+			}
+
+			if incorruptible.EnablePadding && ((len(b) % 4) != 0) {
+				t.Errorf("len(b) %d must be 32-bit aligned but gap =%d", len(b), len(b)%4)
+				return
+			}
+
+			got, err := incorruptible.Unmarshal(b)
 			if err != nil {
-				t.Error("Decode() error =", err)
+				t.Errorf("Unmarshal() error = %v", err)
 				return
 			}
 
@@ -84,107 +75,96 @@ func TestDecode(t *testing.T) {
 				!reflect.DeepEqual(got.Values, c.tv.Values) {
 				t.Errorf("Mismatch Values got %v, want %v", got.Values, c.tv.Values)
 			}
-
-			cookie, err := incorr.NewCookieFromValues(c.tv)
-			if err != nil {
-				t.Error("NewCookie()", err)
-				return
-			}
-
-			err = cookie.Valid()
-			if cookie.Expires.IsZero() {
-				// https://github.com/golang/go/issues/52989
-				if err.Error() == "http: invalid Cookie.Expires" {
-					return
-				}
-				t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed: ", err)
-			}
-			if err != nil {
-				t.Error("Invalid cookie:", err)
-			}
 		})
 	}
 }
 
-var expiry = time.Date(incorruptible.ExpiryStartYear, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
-
-var encoderDataCases = []struct {
+var codingDataCases = []struct {
 	name    string
+	magic   uint8
 	wantErr bool
 	tv      incorruptible.TValues
 }{
 	{
-		"noIP", false, incorruptible.TValues{
+		"noIP", 109, false, incorruptible.TValues{
 			Expires: expiry,
 			IP:      nil,
 			Values:  nil,
 		},
 	},
 	{
-		"noIPnoExpiry", false, incorruptible.TValues{
+		"noIPnoExpiry", 109, false, incorruptible.TValues{
 			Expires: 0,
 			IP:      nil,
 			Values:  nil,
 		},
 	},
 	{
-		"noExpiry", false, incorruptible.TValues{
+		"noExpiry", 109, false, incorruptible.TValues{
 			Expires: 0,
 			IP:      net.IPv4(0, 0, 0, 0),
 			Values:  nil,
 		},
 	},
 	{
-		"noneIPv4", false, incorruptible.TValues{
+		"noneIPv4", 0x51, false,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IPv4(11, 22, 33, 44),
-			Values:  nil,
+			Values:  [][]byte{},
 		},
 	},
 	{
-		"noneIPv6", false, incorruptible.TValues{
+		"noneIPv6", 0x51, false,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values:  [][]byte{},
 		},
 	},
 	{
-		"1emptyIPv6", false, incorruptible.TValues{
+		"1emptyIPv6", 0x51, false,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values:  [][]byte{[]byte("")},
 		},
 	},
 	{
-		"4emptyIPv6", false, incorruptible.TValues{
+		"4emptyIPv6", 0x51, false,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values:  [][]byte{[]byte(""), []byte(""), []byte(""), []byte("")},
 		},
 	},
 	{
-		"1smallIPv6", false, incorruptible.TValues{
+		"1smallIPv6", 0x51, false,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values:  [][]byte{[]byte("1")},
 		},
 	},
 	{
-		"1valIPv6", false, incorruptible.TValues{
+		"1valIPv6", 0x51, false,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values:  [][]byte{[]byte("123456789-B-123456789-C-123456789-D-123456789-E-123456789")},
 		},
 	},
 	{
-		"1moreIPv6", false, incorruptible.TValues{
+		"1moreIPv6", 0x51, false,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values:  [][]byte{[]byte("123456789-B-123456789-C-123456789-D-123456789-E-123456789-")},
 		},
 	},
 	{
-		"Compress 10valIPv6", false, incorruptible.TValues{
+		"Compress 10valIPv6", 0x51, false,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values: [][]byte{
@@ -199,82 +179,11 @@ var encoderDataCases = []struct {
 		},
 	},
 	{
-		"too much values", true, incorruptible.TValues{
+		"too much values", 0x51, true,
+		incorruptible.TValues{
 			Expires: expiry,
 			IP:      net.IP{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 			Values:  values,
 		},
 	},
-}
-
-var values = [][]byte{
-	{1},
-	{2},
-	{3},
-	{4},
-	{5},
-	{6},
-	{7},
-	{8},
-	{9},
-	{10},
-	{11},
-	{12},
-	{13},
-	{14},
-	{15},
-	{16},
-	{17},
-	{18},
-	{19},
-	{20},
-	{21},
-	{22},
-	{23},
-	{24},
-	{25},
-	{26},
-	{27},
-	{28},
-	{29},
-	{30},
-	{31},
-	{32},
-	{33},
-	{34},
-	{35},
-	{36},
-	{37},
-	{38},
-	{39},
-	{40},
-	{41},
-	{42},
-	{43},
-	{44},
-	{45},
-	{46},
-	{47},
-	{48},
-	{49},
-	{50},
-	{51},
-	{52},
-	{53},
-	{54},
-	{55},
-	{56},
-	{57},
-	{58},
-	{59},
-	{60},
-	{61},
-	{62},
-	{63},
-	{64},
-	{65},
-	{66},
-	{67},
-	{68},
-	{69},
 }

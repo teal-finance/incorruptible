@@ -3,70 +3,20 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-package tvalues_test
+package incorruptible_test
 
 import (
 	"math"
 	"strconv"
 	"testing"
 
-	"github.com/teal-finance/incorruptible/format/coding"
-	"github.com/teal-finance/incorruptible/tvalues"
+	"github.com/teal-finance/incorruptible"
 )
-
-const (
-	keyI = 2
-	keyB = 3
-	keyS = 4
-)
-
-var cases = []struct {
-	name    string
-	key     int
-	val     uint64
-	wantErr bool
-	tv      tvalues.TValues
-}{
-	{"v=0", 0, 0, false, tvalues.TValues{}},
-	{"v=1", 0, 1, false, tvalues.TValues{}},
-	{"v=255", 0, 255, false, tvalues.TValues{}},
-	{"v=256", 0, 256, false, tvalues.TValues{}},
-	{"v=65000", 0, 65000, false, tvalues.TValues{}},
-	{"v=66000", 0, 66000, false, tvalues.TValues{}},
-	{"v=2²⁴", 0, 1 << 24, false, tvalues.TValues{}},
-	{"v=2³³", 0, 1 << 33, false, tvalues.TValues{}},
-	{"v=MAX", 0, math.MaxUint64, false, tvalues.TValues{}},
-
-	{"i=1", 1, 0, false, tvalues.TValues{}},
-	{"i=2", 5, 4, false, tvalues.TValues{}},
-	{"i=9", 9, 999, false, tvalues.TValues{}},
-	{"i=31", coding.MaxValues, 9999, false, tvalues.TValues{}},
-	{"i=32", coding.MaxValues + 1, 9, true, tvalues.TValues{}},
-	{"i=-1", -1, 9, true, tvalues.TValues{}},
-
-	{"i=0 len=5", 0, 0, false, tvalues.TValues{Values: make([][]byte, 5)}},
-	{"i=1 len=5", 1, 999, false, tvalues.TValues{Values: make([][]byte, 5)}},
-	{"i=4 len=5", 5, 99999, false, tvalues.TValues{Values: make([][]byte, 5)}},
-	{"i=5 len=5", 6, 99999999, false, tvalues.TValues{Values: make([][]byte, 5)}},
-	{"i=6 len=5", 7, 999999999999, false, tvalues.TValues{Values: make([][]byte, 5)}},
-	{"i=9 len=5", 9, 999999999999999, false, tvalues.TValues{Values: make([][]byte, 5)}},
-	{"i=31 len=5", coding.MaxValues, 9, false, tvalues.TValues{Values: make([][]byte, 5)}},
-	{"i=32 len=5", coding.MaxValues + 1, 9, true, tvalues.TValues{Values: make([][]byte, 5)}},
-
-	{"i=0 cap=5", 0, 9, false, tvalues.TValues{Values: make([][]byte, 0, 5)}},
-	{"i=1 cap=5", 1, 999, false, tvalues.TValues{Values: make([][]byte, 0, 5)}},
-	{"i=4 len=5", 5, 99999, false, tvalues.TValues{Values: make([][]byte, 0, 5)}},
-	{"i=5 len=5", 6, 99999999, false, tvalues.TValues{Values: make([][]byte, 0, 5)}},
-	{"i=6 len=5", 7, 99999999999, false, tvalues.TValues{Values: make([][]byte, 0, 5)}},
-	{"i=9 cap=5", 9, math.MaxUint64, false, tvalues.TValues{Values: make([][]byte, 0, 5)}},
-	{"i=31 cap=5", coding.MaxValues, 9, false, tvalues.TValues{Values: make([][]byte, 0, 5)}},
-	{"i=32 cap=5", coding.MaxValues + 1, 9, true, tvalues.TValues{Values: make([][]byte, 0, 5)}},
-}
 
 func TestTValues_Uint64(t *testing.T) {
 	t.Parallel()
 
-	for _, c := range cases {
+	for _, c := range dataCases {
 		// duplicate case data to enable parallel testing
 		c := c
 		c.tv.Values = append([][]byte(nil), c.tv.Values...)
@@ -100,7 +50,7 @@ func TestTValues_Uint64(t *testing.T) {
 func TestTValues_Int64(t *testing.T) {
 	t.Parallel()
 
-	for _, c := range cases {
+	for _, c := range dataCases {
 		// duplicate case data to enable parallel testing
 		c := c
 		c.tv.Values = append([][]byte(nil), c.tv.Values...)
@@ -135,7 +85,7 @@ func TestTValues_Int64(t *testing.T) {
 func TestTValues_Bool(t *testing.T) {
 	t.Parallel()
 
-	for _, c := range cases {
+	for _, c := range dataCases {
 		// duplicate case data to enable parallel testing
 		c := c
 		c.tv.Values = append([][]byte(nil), c.tv.Values...)
@@ -173,7 +123,7 @@ func TestTValues_Bool(t *testing.T) {
 func TestTValues_String(t *testing.T) {
 	t.Parallel()
 
-	for _, c := range cases {
+	for _, c := range dataCases {
 		// duplicate case data to enable parallel testing
 		c := c
 		c.tv.Values = append([][]byte(nil), c.tv.Values...)
@@ -212,7 +162,7 @@ func TestTValues_String(t *testing.T) {
 func TestTValues_Set(t *testing.T) {
 	t.Parallel()
 
-	for _, c := range cases {
+	for _, c := range dataCases {
 		// duplicate case data to enable parallel testing
 		c := c
 		c.tv.Values = append([][]byte(nil), c.tv.Values...)
@@ -292,4 +242,53 @@ func TestTValues_Set(t *testing.T) {
 			}
 		})
 	}
+}
+
+const (
+	keyI = 2
+	keyB = 3
+	keyS = 4
+)
+
+var dataCases = []struct {
+	name    string
+	key     int
+	val     uint64
+	wantErr bool
+	tv      incorruptible.TValues
+}{
+	{"v=0", 0, 0, false, incorruptible.TValues{}},
+	{"v=1", 0, 1, false, incorruptible.TValues{}},
+	{"v=255", 0, 255, false, incorruptible.TValues{}},
+	{"v=256", 0, 256, false, incorruptible.TValues{}},
+	{"v=65000", 0, 65000, false, incorruptible.TValues{}},
+	{"v=66000", 0, 66000, false, incorruptible.TValues{}},
+	{"v=2²⁴", 0, 1 << 24, false, incorruptible.TValues{}},
+	{"v=2³³", 0, 1 << 33, false, incorruptible.TValues{}},
+	{"v=MAX", 0, math.MaxUint64, false, incorruptible.TValues{}},
+
+	{"i=1", 1, 0, false, incorruptible.TValues{}},
+	{"i=2", 5, 4, false, incorruptible.TValues{}},
+	{"i=9", 9, 999, false, incorruptible.TValues{}},
+	{"i=31", incorruptible.MaxValues, 9999, false, incorruptible.TValues{}},
+	{"i=32", incorruptible.MaxValues + 1, 9, true, incorruptible.TValues{}},
+	{"i=-1", -1, 9, true, incorruptible.TValues{}},
+
+	{"i=0 len=5", 0, 0, false, incorruptible.TValues{Values: make([][]byte, 5)}},
+	{"i=1 len=5", 1, 999, false, incorruptible.TValues{Values: make([][]byte, 5)}},
+	{"i=4 len=5", 5, 99999, false, incorruptible.TValues{Values: make([][]byte, 5)}},
+	{"i=5 len=5", 6, 99999999, false, incorruptible.TValues{Values: make([][]byte, 5)}},
+	{"i=6 len=5", 7, 999999999999, false, incorruptible.TValues{Values: make([][]byte, 5)}},
+	{"i=9 len=5", 9, 999999999999999, false, incorruptible.TValues{Values: make([][]byte, 5)}},
+	{"i=31 len=5", incorruptible.MaxValues, 9, false, incorruptible.TValues{Values: make([][]byte, 5)}},
+	{"i=32 len=5", incorruptible.MaxValues + 1, 9, true, incorruptible.TValues{Values: make([][]byte, 5)}},
+
+	{"i=0 cap=5", 0, 9, false, incorruptible.TValues{Values: make([][]byte, 0, 5)}},
+	{"i=1 cap=5", 1, 999, false, incorruptible.TValues{Values: make([][]byte, 0, 5)}},
+	{"i=4 len=5", 5, 99999, false, incorruptible.TValues{Values: make([][]byte, 0, 5)}},
+	{"i=5 len=5", 6, 99999999, false, incorruptible.TValues{Values: make([][]byte, 0, 5)}},
+	{"i=6 len=5", 7, 99999999999, false, incorruptible.TValues{Values: make([][]byte, 0, 5)}},
+	{"i=9 cap=5", 9, math.MaxUint64, false, incorruptible.TValues{Values: make([][]byte, 0, 5)}},
+	{"i=31 cap=5", incorruptible.MaxValues, 9, false, incorruptible.TValues{Values: make([][]byte, 0, 5)}},
+	{"i=32 cap=5", incorruptible.MaxValues + 1, 9, true, incorruptible.TValues{Values: make([][]byte, 0, 5)}},
 }

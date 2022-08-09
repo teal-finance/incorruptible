@@ -3,11 +3,7 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
-// Package format serialize a TValues in a short way.
-// The format starts with a magic code (2 bytes),
-// followed by the expiry time, the client IP, the user-defined values,
-// and ends with random salt as padding for a final size aligned on 32 bits.
-package format
+package incorruptible
 
 import (
 	"fmt"
