@@ -12,8 +12,6 @@ import (
 	"net"
 	"net/http"
 	"time"
-
-	"github.com/teal-finance/incorruptible/format/coding"
 )
 
 const (
@@ -24,8 +22,8 @@ const (
 )
 
 type TValues struct {
-	Expires int64 // Unix time UTC (seconds since 1970)
-	IP      net.IP
+	Expires int64  // Unix time UTC (seconds since 1970)
+	IP      net.IP // TOTO: use netip.Addr
 	Values  [][]byte
 }
 
@@ -135,165 +133,21 @@ func (tv TValues) CompareExpiry() int {
 	return 0
 }
 
-func (tv *TValues) SetUint64(i int, v uint64) error {
-	if err := tv.check(i); err != nil {
-		return err
-	}
-	b := coding.Uint64ToBytes(v)
-	tv.set(i, b)
-	return nil
-}
-
-func (tv TValues) Uint64(i int) (uint64, error) {
-	if (i < 0) || (i >= len(tv.Values)) {
-		return 0, fmt.Errorf("i=%d out of range (%d values)", i, len(tv.Values))
-	}
-	return coding.BytesToUint64(tv.Values[i])
-}
-
-func (tv *TValues) SetInt64(i int, v int64) error {
-	return tv.SetUint64(i, uint64(v))
-}
-
-func (tv TValues) Int64(i int) (int64, error) {
-	v, err := tv.Uint64(i)
-	return int64(v), err
-}
-
-func (tv *TValues) SetBool(i int, value bool) error {
-	if err := tv.check(i); err != nil {
-		return err
-	}
-
-	var buf []byte // false --> length=0
-	if value {
-		buf = []byte{0} // true --> length=1
-	}
-
-	tv.set(i, buf)
-	return nil
-}
-
-func (tv TValues) Bool(i int) (bool, error) {
-	if (i < 0) || (i >= len(tv.Values)) {
-		return false, fmt.Errorf("i=%d out of range (%d values)", i, len(tv.Values))
-	}
-
-	b := tv.Values[i]
-	switch len(b) {
-	case 0:
-		return false, nil
-	case 1:
-		return true, nil
-	default:
-		return false, fmt.Errorf("got %d bytes but want only 0 or 1 byte for boolean encoding", len(b))
-	}
-}
-
-func (tv *TValues) SetString(i int, s string) error {
-	if err := tv.check(i); err != nil {
-		return err
-	}
-
-	tv.set(i, []byte(s))
-	return nil
-}
-
-func (tv TValues) String(i int) (string, error) {
-	if (i < 0) || (i >= len(tv.Values)) {
-		return "", fmt.Errorf("i=%d out of range (%d values)", i, len(tv.Values))
-	}
-	return string(tv.Values[i]), nil
-}
-
-func (tv TValues) Uint64IfAny(i int, defaultValue ...uint64) uint64 {
-	v, err := tv.Uint64(i)
-	if err != nil {
-		if len(defaultValue) == 0 {
-			return 0
-		}
-		return defaultValue[0]
-	}
-	return v
-}
-
-func (tv TValues) Int64IfAny(i int, defaultValue ...int64) int64 {
-	v, err := tv.Int64(i)
-	if err != nil {
-		if len(defaultValue) == 0 {
-			return 0
-		}
-		return defaultValue[0]
-	}
-	return v
-}
-
-func (tv TValues) BoolIfAny(i int, defaultValue ...bool) bool {
-	v, err := tv.Bool(i)
-	if err != nil {
-		if len(defaultValue) == 0 {
-			return false
-		}
-		return defaultValue[0]
-	}
-	return v
-}
-
-func (tv TValues) StringIfAny(i int, defaultValue ...string) string {
-	v, err := tv.String(i)
-	if err != nil {
-		if len(defaultValue) == 0 {
-			return ""
-		}
-		return defaultValue[0]
-	}
-	return v
-}
-
-func (tv TValues) check(i int) error {
-	if i < 0 {
-		return fmt.Errorf("negative i=%d", i)
-	}
-	if i > coding.MaxValues {
-		return fmt.Errorf("cannot store more than %d values (i=%d)", coding.MaxValues, i)
-	}
-	return nil
-}
-
-func (tv *TValues) set(i int, buf []byte) {
-	if i == len(tv.Values) {
-		tv.Values = append(tv.Values, buf)
-		return
-	}
-
-	if i >= cap(tv.Values) {
-		values := make([][]byte, coding.MaxValues+1)
-		copy(values, tv.Values)
-		tv.Values = values
-	}
-
-	if i >= len(tv.Values) {
-		tv.Values = tv.Values[:i+1]
-	}
-
-	tv.Values[i] = buf
-}
-
 // --------------------------------------
 // Set/Get token to/from request context.
 //
 //nolint:gochecknoglobals // Context access key need to be global variable.
-var key struct{}
+var contextKey struct{}
 
 // ToCtx stores the decoded token in the request context.
 func (tv TValues) ToCtx(r *http.Request) *http.Request {
 	parent := r.Context()
-	child := context.WithValue(parent, key, tv)
+	child := context.WithValue(parent, contextKey, tv)
 	return r.WithContext(child)
 }
 
 // FromCtx gets the decoded token from the request context.
 func FromCtx(r *http.Request) (TValues, bool) {
-	tv, ok := r.Context().Value(key).(TValues)
+	tv, ok := r.Context().Value(contextKey).(TValues)
 	return tv, ok
 }
