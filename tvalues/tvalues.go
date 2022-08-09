@@ -218,9 +218,15 @@ func (tv TValues) Uint64IfAny(i int, defaultValue ...uint64) uint64 {
 	return v
 }
 
-func (tv TValues) Int64IfAny(i int, defaultValue ...uint64) int64 {
-	v := tv.Uint64IfAny(i, defaultValue...)
-	return int64(v)
+func (tv TValues) Int64IfAny(i int, defaultValue ...int64) int64 {
+	v, err := tv.Int64(i)
+	if err != nil {
+		if len(defaultValue) == 0 {
+			return 0
+		}
+		return defaultValue[0]
+	}
+	return v
 }
 
 func (tv TValues) BoolIfAny(i int, defaultValue ...bool) bool {
