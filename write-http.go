@@ -17,7 +17,6 @@ type WriteErr func(w http.ResponseWriter, r *http.Request, statusCode int, messa
 // Write is a fast and pretty JSON marshaler.
 func defaultWriteErr(w http.ResponseWriter, r *http.Request, statusCode int, messages ...any) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(statusCode)
 
 	buf := make([]byte, 0, 1024)
