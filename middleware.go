@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-// Set puts a "session" cookie when the request has no valid "incorruptible" token.
+// Set is a middleware putting a "session" cookie when the request has no valid "incorruptible" token.
 // The token is searched in the "session" cookie and in the first "Authorization" header.
 // The "session" cookie (that is added in the response) contains a minimalist "incorruptible" token.
 // Finally, Set stores the decoded token in the request context.
@@ -36,8 +36,8 @@ func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
 	})
 }
 
-// Chk accepts requests only if it has a valid cookie.
-// Chk does not verify the "Authorization" header.
+// Chk is a middleware accepting requests only if it has a valid Incorruptible cookie,
+// Chk does not consider the "Authorization" header (only the token within the cookie).
 // Use instead the Vet() middleware to also verify the "Authorization" header.
 // Chk finally stores the decoded token in the request context.
 // In dev. mode, Chk accepts requests without valid cookie but does not store invalid tokens.
@@ -59,8 +59,8 @@ func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
 	})
 }
 
-// Vet accepts requests having a valid token either in
-// the "session" cookie or in the first "Authorization" header.
+// Vet is a middleware accepting requests having a valid Incorruptible token
+// either in the cookie or in the first "Authorization" header.
 // Vet finally stores the decoded token in the request context.
 // In dev. mode, Vet accepts requests without a valid token but does not store invalid tokens.
 func (incorr *Incorruptible) Vet(next http.Handler) http.Handler {
