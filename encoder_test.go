@@ -29,7 +29,7 @@ func TestDecode(t *testing.T) {
 
 		key := [16]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6}
 
-		incorr := incorruptible.New("session", []*url.URL{u}, key[:], 0, true, nil)
+		incorr := incorruptible.New(nil, []*url.URL{u}, key[:], "session", 0, true)
 
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()

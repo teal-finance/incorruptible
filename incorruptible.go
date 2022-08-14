@@ -35,19 +35,23 @@ const (
 	prefixScheme = authScheme + tokenScheme
 )
 
-func New(name string, urls []*url.URL, secretKey []byte, maxAge int, setIP bool, writeErr WriteErr) *Incorruptible {
+// New creates a new Incorruptible. The order of the parameters are consistent with garcon.NewJWTChecker (see Teal-Finance/Garcon).
+// The Garcon middleware constructors use a garcon.Writer as first parameter.
+// Please share your thoughts/feedback, we can still change that.
+func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string, maxAge int, setIP bool) *Incorruptible {
+	if writeErr == nil {
+		writeErr = defaultWriteErr
+	}
+
 	if len(urls) == 0 {
 		log.Panic("No urls => Cannot set Cookie domain")
 	}
+
 	secure, dns, dir := extractMainDomain(urls[0])
 
 	cipher, err := NewAESCipher(secretKey)
 	if err != nil {
 		log.Panic("AES NewCipher ", err)
-	}
-
-	if writeErr == nil {
-		writeErr = defaultWriteErr
 	}
 
 	initRandomGenerator(secretKey)
@@ -57,13 +61,15 @@ func New(name string, urls []*url.URL, secretKey []byte, maxAge int, setIP bool,
 	incorr := Incorruptible{
 		writeErr: writeErr,
 		SetIP:    setIP,
-		cookie:   emptyCookie(name, secure, dns, dir, maxAge),
+		cookie:   emptyCookie(cookieName, secure, dns, dir, maxAge),
 		IsDev:    isLocalhost(urls),
 		cipher:   cipher,
 		magic:    magic,
 		baseN:    baseN.NewEncoding(encodingAlphabet),
 	}
+
 	incorr.addMinimalistToken()
+
 	return &incorr
 }
 
