@@ -231,6 +231,12 @@ func emptyCookie(name string, secure bool, dns, dir string, maxAge int) http.Coo
 		}
 	}
 
+	// https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+	sameSite := http.SameSiteLaxMode
+	if secure {
+		sameSite = http.SameSiteStrictMode
+	}
+
 	return http.Cookie{
 		Name:       name,
 		Value:      "", // emptyCookie because no token
@@ -241,7 +247,7 @@ func emptyCookie(name string, secure bool, dns, dir string, maxAge int) http.Coo
 		MaxAge:     maxAge,
 		Secure:     secure,
 		HttpOnly:   true,
-		SameSite:   http.SameSiteStrictMode,
+		SameSite:   sameSite,
 		Raw:        "",
 		Unparsed:   nil,
 	}
