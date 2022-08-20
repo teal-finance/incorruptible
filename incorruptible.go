@@ -7,6 +7,7 @@ package incorruptible
 
 import (
 	"crypto/cipher"
+	cryptorand "crypto/rand"
 	"encoding/binary"
 	"log"
 	"math/rand"
@@ -55,9 +56,15 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 		log.Panic("AES NewCipher ", err)
 	}
 
+	// initializes the random generator with a reproducible secret seed
 	initRandomGenerator(secretKey)
 	magic := magicCode()
 	encodingAlphabet := shuffle(noSpaceDoubleQuoteSemicolon)
+
+	// reset the random generator with a strong random seed
+	random := make([]byte, 16) // 16 bytes are required by initRandomGenerator()
+	_, _ = cryptorand.Read(random)
+	initRandomGenerator(random)
 
 	incorr := Incorruptible{
 		writeErr: writeErr,
