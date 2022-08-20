@@ -6,6 +6,7 @@
 package incorruptible
 
 import (
+	"crypto/cipher"
 	"encoding/binary"
 	"log"
 	"math/rand"
@@ -24,7 +25,7 @@ type Incorruptible struct {
 	SetIP    bool // If true => put the remote IP in the token.
 	cookie   http.Cookie
 	IsDev    bool
-	cipher   Cipher
+	cipher   cipher.AEAD
 	magic    byte
 	baseN    *baseN.Encoding
 }
@@ -49,7 +50,7 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 
 	secure, dns, dir := extractMainDomain(urls[0])
 
-	cipher, err := NewAESCipher(secretKey)
+	c, err := NewAESCipher(secretKey)
 	if err != nil {
 		log.Panic("AES NewCipher ", err)
 	}
@@ -63,7 +64,7 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 		SetIP:    setIP,
 		cookie:   emptyCookie(cookieName, secure, dns, dir, maxAge),
 		IsDev:    isLocalhost(urls),
-		cipher:   cipher,
+		cipher:   c,
 		magic:    magic,
 		baseN:    baseN.NewEncoding(encodingAlphabet),
 	}

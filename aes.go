@@ -8,14 +8,9 @@ package incorruptible
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"log"
+	"math/rand"
 )
-
-type Cipher struct {
-	gcm   cipher.AEAD
-	nonce []byte
-}
 
 // NewAESCipher creates a cipher with Encrypt() and Decrypt() functions
 // for AEAD (Authenticated Encryption with Associated Data).
@@ -44,8 +39,8 @@ type Cipher struct {
 // https://golang.org/design/cryptography-principles
 // Secure implementation, faultlessly configurable,
 // performant and state-of-the-art updated.
-func NewAESCipher(secretKey []byte) (Cipher, error) {
-	var c Cipher
+func NewAESCipher(secretKey []byte) (cipher.AEAD, error) {
+	var c cipher.AEAD
 
 	if len(secretKey) != 16 {
 		// prefer 16 bytes (AES-128, faster) over 32 (AES-256, irrelevant extra security).
@@ -57,29 +52,26 @@ func NewAESCipher(secretKey []byte) (Cipher, error) {
 		return c, err
 	}
 
-	c.gcm, err = cipher.NewGCM(block)
-	if err != nil {
-		return c, err
-	}
-
-	// Never use more than 2^32 random nonces with a given key
-	// because of the risk of a repeat (birthday attack).
-	c.nonce = make([]byte, c.gcm.NonceSize())
-	_, err = rand.Read(c.nonce)
-
-	return c, err
+	return cipher.NewGCM(block)
 }
 
-// Encrypt encrypts data using 256-bit AES-GCM.  This both hides the content of
-// the data and provides a check that it hasn't been altered. Output takes the
-// form nonce|cipherText|tag where '|' indicates concatenation.
-func (c *Cipher) Encrypt(plainText []byte) []byte {
-	return c.gcm.Seal(nil, c.nonce, plainText, nil)
+// Encrypt encrypts data using 256-bit AES-GCM.
+// This both hides the content of the data and
+// provides a check that it hasn't been altered.
+// Output takes the form "nonce|cipherText|tag" where '|' indicates concatenation.
+func Encrypt(c cipher.AEAD, plainText []byte) []byte {
+	nonce := make([]byte, c.NonceSize(), c.NonceSize()+len(plainText)+16) // GCM tag is 16 bytes
+	_, _ = rand.Read(nonce)
+	cipherTextAndTag := c.Seal(nil, nonce, plainText, nil)
+	return append(nonce, cipherTextAndTag...)
 }
 
-// Decrypt decrypts data using 256-bit AES-GCM.  This both hides the content of
-// the data and provides a check that it hasn't been altered. Expects input
-// form nonce|cipherText|tag where '|' indicates concatenation.
-func (c *Cipher) Decrypt(cipherText []byte) ([]byte, error) {
-	return c.gcm.Open(nil, c.nonce, cipherText, nil)
+// Decrypt decrypts data using 256-bit AES-GCM.
+// This both hides the content of the data and
+// provides a check that it hasn't been altered.
+// Expects input form "nonce|cipherText|tag" where '|' indicates concatenation.
+func Decrypt(c cipher.AEAD, nonceAndCipherTextAndTag []byte) ([]byte, error) {
+	nonce := nonceAndCipherTextAndTag[:12]
+	cipherTextAndTag := nonceAndCipherTextAndTag[12:]
+	return c.Open(nil, nonce, cipherTextAndTag, nil)
 }

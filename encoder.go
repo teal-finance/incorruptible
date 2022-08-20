@@ -17,8 +17,8 @@ import (
 const (
 	// Base91MinSize and ciphertextMinSize need to be adapted according
 	// on any change about expiry encoding size, padding size….
-	Base91MinSize     = 27
-	ciphertextMinSize = 22
+	Base91MinSize    = 42
+	encryptedMinSize = 12 + 6 + 16 // nonce + min cypherText + tag
 
 	// noSpaceDoubleQuoteSemicolon exclude character not welcome in cookie token:
 	// space, double-quote ", semi-colon ; and back-slash \
@@ -41,10 +41,10 @@ func (incorr *Incorruptible) Encode(tv TValues) (string, error) {
 	}
 	printB("Encode plaintext", plainText)
 
-	cipherText := incorr.cipher.Encrypt(plainText)
-	printB("Encode ciphertext", cipherText)
+	nonceAndCipherTextAndTag := Encrypt(incorr.cipher, plainText)
+	printB("Encode ciphertext", nonceAndCipherTextAndTag)
 
-	str := incorr.baseN.EncodeToString(cipherText)
+	str := incorr.baseN.EncodeToString(nonceAndCipherTextAndTag)
 	printS("Encode BaseXX", str)
 	return str, nil
 }
@@ -58,24 +58,23 @@ func (incorr *Incorruptible) Decode(str string) (TValues, error) {
 		return tv, fmt.Errorf("BaseXX string too short: %d < min=%d", len(str), Base91MinSize)
 	}
 
-	cipherText, err := incorr.baseN.DecodeString(str)
+	nonceAndCipherText, err := incorr.baseN.DecodeString(str)
 	if err != nil {
 		return tv, err
 	}
-	printB("Decode cipherText", cipherText)
+	printB("Decode cipherText", nonceAndCipherText)
 
-	if len(cipherText) < ciphertextMinSize {
-		return tv, fmt.Errorf("cipherText too short: %d < min=%d", len(cipherText), ciphertextMinSize)
+	if len(nonceAndCipherText) < encryptedMinSize {
+		return tv, fmt.Errorf("cipherText too short: %d < min=%d", len(nonceAndCipherText), encryptedMinSize)
 	}
 
-	plainText, err := incorr.cipher.Decrypt(cipherText)
+	plainText, err := Decrypt(incorr.cipher, nonceAndCipherText)
 	if err != nil {
 		return tv, err
 	}
 	printB("Decode plainText", plainText)
 
-	magic := MagicCode(plainText)
-	if magic != incorr.magic {
+	if MagicCode(plainText) != incorr.magic {
 		return tv, errors.New("bad magic code")
 	}
 
