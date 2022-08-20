@@ -178,6 +178,10 @@ func (incorr *Incorruptible) Cookie(_ int) *http.Cookie {
 	return &incorr.cookie
 }
 
+func (incorr *Incorruptible) CookieName() string {
+	return incorr.cookie.Name
+}
+
 // URL schemes.
 const (
 	HTTP  = "http"
