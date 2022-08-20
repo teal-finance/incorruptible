@@ -158,6 +158,21 @@ func (incorr *Incorruptible) NewCookieFromToken(token string, maxAge int) *http.
 	return &cookie
 }
 
+// DeadCookie returns an Incorruptible cookie without Value and with "Max-Age=0"
+// in order to delete the Incorruptible cookie in the current HTTP session.
+//
+// Example:
+//
+//	func logout(w http.ResponseWriter, r *http.Request) {
+//	    http.SetCookie(w, Incorruptible.DeadCookie())
+//	}
+func (incorr *Incorruptible) DeadCookie() *http.Cookie {
+	cookie := incorr.cookie // local copy of the default cookie
+	cookie.Value = ""
+	cookie.MaxAge = -1 // MaxAge<0 means "delete cookie now"
+	return &cookie
+}
+
 // Cookie returns a default cookie to facilitate testing.
 func (incorr *Incorruptible) Cookie(_ int) *http.Cookie {
 	return &incorr.cookie
