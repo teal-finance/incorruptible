@@ -262,11 +262,10 @@ func emptyCookie(name string, secure bool, dns, dir string, maxAge int) http.Coo
 		}
 	}
 
+	// sameSite = Strict works when using two backends like:
+	// localhost:3000 (node) and localhost:8080 (API)
 	// https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite
-	sameSite := http.SameSiteDefaultMode
-	if secure {
-		sameSite = http.SameSiteStrictMode
-	}
+	const sameSite = http.SameSiteStrictMode
 
 	return http.Cookie{
 		Name:       name,
