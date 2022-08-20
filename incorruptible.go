@@ -70,6 +70,15 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 
 	incorr.addMinimalistToken()
 
+	log.Printf("INF Incorruptible cookie %s Domain=%v Path=%v Max-Age=%v Secure=%v SameSite=%v HttpOnly=%v",
+		incorr.cookie.Name,
+		incorr.cookie.Domain,
+		incorr.cookie.Path,
+		incorr.cookie.MaxAge,
+		incorr.cookie.Secure,
+		incorr.cookie.SameSite,
+		incorr.cookie.HttpOnly)
+
 	return &incorr
 }
 
@@ -251,7 +260,7 @@ func emptyCookie(name string, secure bool, dns, dir string, maxAge int) http.Coo
 	}
 
 	// https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite
-	sameSite := http.SameSiteLaxMode
+	sameSite := http.SameSiteDefaultMode
 	if secure {
 		sameSite = http.SameSiteStrictMode
 	}
