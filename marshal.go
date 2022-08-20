@@ -46,7 +46,7 @@ func newSerializer(tv TValues) Serializer {
 
 // doesCompress decides to compress or not the payload.
 // The compression decision is a bit randomized
-// to limit the "chosen plainText" attack.
+// to limit the "chosen plaintext" attack.
 //
 //nolint:gosec // strong random generator not required here
 func doesCompress(payloadSize int) bool {

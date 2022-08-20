@@ -109,7 +109,9 @@ func (incorr *Incorruptible) equalMinimalistToken(base91 string) bool {
 	return incorr.useMinimalistToken() && (base91 == incorr.cookie.Value[schemeSize:])
 }
 
-// initRandomGenerator initializes the random generator with a reproducible secret seed.
+// initRandomGenerator can be used to
+// initializes the random generator
+// with a reproducible secret seed.
 func initRandomGenerator(secretKey []byte) {
 	seed := binary.BigEndian.Uint64(secretKey)
 	seed += binary.BigEndian.Uint64(secretKey[8:])

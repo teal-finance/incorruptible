@@ -58,20 +58,21 @@ func NewAESCipher(secretKey []byte) (cipher.AEAD, error) {
 // Encrypt encrypts data using 256-bit AES-GCM.
 // This both hides the content of the data and
 // provides a check that it hasn't been altered.
-// Output takes the form "nonce|cipherText|tag" where '|' indicates concatenation.
-func Encrypt(c cipher.AEAD, plainText []byte) []byte {
-	nonce := make([]byte, c.NonceSize(), c.NonceSize()+len(plainText)+16) // GCM tag is 16 bytes
+// Output takes the form "nonce|ciphertext|tag" where '|' indicates concatenation.
+func Encrypt(c cipher.AEAD, plaintext []byte) []byte {
+	predictedTotalSize := c.NonceSize() + len(plaintext) + gcmTagSize
+	nonce := make([]byte, c.NonceSize(), predictedTotalSize)
 	_, _ = rand.Read(nonce)
-	cipherTextAndTag := c.Seal(nil, nonce, plainText, nil)
-	return append(nonce, cipherTextAndTag...)
+	ciphertextAndTag := c.Seal(nil, nonce, plaintext, nil)
+	return append(nonce, ciphertextAndTag...)
 }
 
 // Decrypt decrypts data using 256-bit AES-GCM.
 // This both hides the content of the data and
 // provides a check that it hasn't been altered.
-// Expects input form "nonce|cipherText|tag" where '|' indicates concatenation.
-func Decrypt(c cipher.AEAD, nonceAndCipherTextAndTag []byte) ([]byte, error) {
-	nonce := nonceAndCipherTextAndTag[:12]
-	cipherTextAndTag := nonceAndCipherTextAndTag[12:]
-	return c.Open(nil, nonce, cipherTextAndTag, nil)
+// Expects input form "nonce|ciphertext|tag" where '|' indicates concatenation.
+func Decrypt(c cipher.AEAD, nonceAndCiphertextAndTag []byte) ([]byte, error) {
+	nonce := nonceAndCiphertextAndTag[:12]
+	ciphertextAndTag := nonceAndCiphertextAndTag[12:]
+	return c.Open(nil, nonce, ciphertextAndTag, nil)
 }
