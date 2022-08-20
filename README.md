@@ -162,7 +162,10 @@ is compressed with [Snappy S2][s2].
 [c2]: https://github.com/teal-finance/incorruptible/blob/main/format/marshal.go
 
 Then, the entire data bytes are encrypted with AES-GCM 128 bits.
-This encryption adds 16 bytes, including the authentication bytes.
+This encryption adds 28 bytes: 12 bytes for the nonce,
+and 16 bytes for the GCM tag including the authentication.
+We may split the nonce and trim the GCM tag in a future release…
+Please share your thoughts.
 
 Finally, the cipher-text is encoded with BasE91,
 which produces cookie-friendly tokens
@@ -171,7 +174,7 @@ In comparison, Base64 and Ascii85 increase the size
 by 33% and 25%, respectively.
 
 In the end, the minimum required 3 bytes (Magic+Salt+Header)
-becomes a 27-bytes long _Incorruptible_ token (BasE91).
+becomes a 42-bytes long _Incorruptible_ token (BasE91).
 
 ## 🚫 Limitations
 
