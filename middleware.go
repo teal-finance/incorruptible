@@ -200,6 +200,6 @@ func trimBearerScheme(auth string) (string, error) {
 
 func printErr(str string, err error) {
 	if doPrint {
-		log.Printf("DBG Incorr%s: %v", str, err)
+		log.Printf("DBG Incorr.%s: %v", str, err)
 	}
 }

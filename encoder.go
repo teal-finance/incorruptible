@@ -36,13 +36,13 @@ const (
 )
 
 func (incorr *Incorruptible) Encode(tv TValues) (string, error) {
-	printV("Encode", tv, errors.New(""))
+	printV("Encode Marshal", tv, nil)
 
 	plaintext, err := Marshal(tv, incorr.magic)
 	if err != nil {
 		return "", err
 	}
-	printB("Encode plaintext", plainText)
+	printB("Encode Encrypt plaintext", plaintext)
 
 	nonceAndCiphertextAndTag := Encrypt(incorr.cipher, plaintext)
 	printB("Encode EncodeToString ciphertext", nonceAndCiphertextAndTag)
@@ -55,7 +55,7 @@ func (incorr *Incorruptible) Encode(tv TValues) (string, error) {
 func (incorr *Incorruptible) Decode(base91 string) (TValues, error) {
 	var tv TValues
 
-	printS("Decode BaseXX", str)
+	printS("Decode DecodeString BasE91", base91)
 
 	if len(base91) < Base91MinSize {
 		return tv, fmt.Errorf("BasE91 text too short: %d < min=%d", len(base91), Base91MinSize)
@@ -65,7 +65,7 @@ func (incorr *Incorruptible) Decode(base91 string) (TValues, error) {
 	if err != nil {
 		return tv, err
 	}
-	printB("Decode cipherText", nonceAndCipherText)
+	printB("Decode Decrypt", encrypted)
 
 	if len(encrypted) < encryptedMinSize {
 		return tv, fmt.Errorf("encrypted data too short: %d < min=%d", len(encrypted), encryptedMinSize)
@@ -75,7 +75,7 @@ func (incorr *Incorruptible) Decode(base91 string) (TValues, error) {
 	if err != nil {
 		return tv, err
 	}
-	printB("Decode plainText", plainText)
+	printB("Decode Unmarshal plaintext", plaintext)
 
 	if MagicCode(plaintext) != incorr.magic {
 		return tv, errors.New("bad magic code")
@@ -93,7 +93,7 @@ func printS(name, s string) {
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("DBG Incorr%s len=%d %q", name, len(s), s[:n])
+		log.Printf("DBG Incorr.%s len=%d %q", name, len(s), s[:n])
 	}
 }
 
@@ -104,14 +104,14 @@ func printB(name string, buf []byte) {
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("DBG Incorr%s len=%d cap=%d %x", name, len(buf), cap(buf), buf[:n])
+		log.Printf("DBG Incorr.%s len=%d cap=%d %x", name, len(buf), cap(buf), buf[:n])
 	}
 }
 
 // printV prints TValues in debug mode (when doPrint is true).
 func printV(name string, tv TValues, err error) {
 	if doPrint {
-		log.Printf("DBG Incorr%s tv %v %v n=%d err=%s", name,
+		log.Printf("DBG Incorr.%s tv %v %v n=%d err=%s", name,
 			time.Unix(tv.Expires, 0), tv.IP, len(tv.Values), err)
 	}
 }
