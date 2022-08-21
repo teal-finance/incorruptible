@@ -97,7 +97,7 @@ func (incorr *Incorruptible) addMinimalistToken() {
 
 	// serialize a minimalist token
 	// including encryption and Base91-encoding
-	token, err := incorr.Encode(NewTValues())
+	token, err := incorr.Encode(EmptyTValues())
 	if err != nil {
 		log.Panic("addMinimalistToken ", err)
 	}
@@ -139,26 +139,46 @@ func shuffle(s string) string {
 
 // NewCookie creates a new cookie based on default values.
 // the HTTP request parameter is used to get the remote IP (only when incorr.SetIP is true).
-func (incorr *Incorruptible) NewCookie(r *http.Request) (*http.Cookie, TValues, error) {
+func (incorr *Incorruptible) NewCookie(r *http.Request, keyValues ...KVal) (*http.Cookie, TValues, error) {
 	cookie := incorr.cookie // local copy of the default cookie
-	tv := NewTValues()
 
-	if !incorr.useMinimalistToken() {
-		tv.SetExpiry(cookie.MaxAge)
-		if incorr.SetIP {
-			err := tv.SetRemoteIP(r)
-			if err != nil {
-				return &cookie, tv, err
-			}
+	tv, err := incorr.NewTValues(r)
+	if err != nil {
+		return &cookie, tv, err
+	}
+
+	if !incorr.useMinimalistToken() || (len(keyValues) > 0) {
+		err := tv.Set(keyValues...)
+		if err != nil {
+			return &cookie, tv, err
 		}
+
 		token, err := incorr.Encode(tv)
 		if err != nil {
 			return &cookie, tv, err
 		}
+
 		cookie.Value = tokenScheme + token
 	}
 
 	return &cookie, tv, nil
+}
+
+func (incorr *Incorruptible) NewTValues(r *http.Request, keyValues ...KVal) (TValues, error) {
+	var tv TValues
+
+	if !incorr.useMinimalistToken() {
+		tv.SetExpiry(incorr.cookie.MaxAge)
+		if incorr.SetIP {
+			err := tv.SetRemoteIP(r)
+			if err != nil {
+				return tv, err
+			}
+		}
+	}
+
+	err := tv.Set(keyValues...)
+	return tv, err
 }
 
 func (incorr *Incorruptible) NewCookieFromValues(tv TValues) (*http.Cookie, error) {

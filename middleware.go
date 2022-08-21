@@ -94,7 +94,7 @@ func (incorr *Incorruptible) DecodeToken(r *http.Request) (TValues, []any) {
 			continue
 		}
 		if incorr.equalMinimalistToken(base91) {
-			return NewTValues(), nil
+			return EmptyTValues(), nil
 		}
 		if tv, err[i] = incorr.Decode(base91); err[i] != nil {
 			continue
@@ -119,7 +119,7 @@ func (incorr *Incorruptible) DecodeCookieToken(r *http.Request) (TValues, error)
 		return TValues{}, err
 	}
 	if incorr.equalMinimalistToken(base91) {
-		return NewTValues(), nil
+		return EmptyTValues(), nil
 	}
 	tv, err := incorr.Decode(base91)
 	if err != nil {
@@ -134,7 +134,7 @@ func (incorr *Incorruptible) DecodeBearerToken(r *http.Request) (TValues, error)
 		return TValues{}, err
 	}
 	if incorr.equalMinimalistToken(base91) {
-		return NewTValues(), nil
+		return EmptyTValues(), nil
 	}
 	tv, err := incorr.Decode(base91)
 	if err != nil {

@@ -27,9 +27,16 @@ type TValues struct {
 	Values  [][]byte
 }
 
-// NewTValues returns an empty TValues that can be used to generate a minimalist token.
-func NewTValues() TValues {
+// EmptyTValues returns an empty TValues that can be used to generate a minimalist token.
+func EmptyTValues() TValues {
 	return TValues{Expires: 0, IP: nil, Values: nil}
+}
+
+// NewTValues returns an empty TValues that can be used to generate a minimalist token.
+func NewTValues(keyValues ...KVal) (TValues, error) {
+	tv := EmptyTValues()
+	err := tv.Set(keyValues...)
+	return tv, err
 }
 
 func (tv *TValues) SetExpiry(maxAge int) {
