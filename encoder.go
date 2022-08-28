@@ -19,8 +19,6 @@ const (
 	// on any change about expiry encoding size, padding size...
 	Base91MinSize     = 42
 	ciphertextMinSize = 6
-	nonceSize         = 12 // AES-128 nonce is 12 bytes
-	gcmTagSize        = 16 // AES-GCM tag is 16 bytes
 	encryptedMinSize  = nonceSize + ciphertextMinSize + gcmTagSize
 
 	// noSpaceDoubleQuoteSemicolon exclude character not welcome in cookie token:
