@@ -46,7 +46,7 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 	}
 
 	if len(urls) == 0 {
-		log.Panic("No urls => Cannot set Cookie domain")
+		log.Panic("No URL => Cannot set cookie attributes: Domain, Secure and Path")
 	}
 
 	secure, dns, dir := extractMainDomain(urls[0])

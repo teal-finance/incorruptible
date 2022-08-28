@@ -19,7 +19,7 @@ const (
 
 // appendPadding adds a random number of random padding bytes.
 //
-//nolint:gosec // strong random generator not required here
+//nolint:gosec // strong random generator not required for padding
 func (s *Serializer) appendPadding(buf []byte) []byte {
 	// computes the number of trailing bytes to fill the padding
 	trailing := len(buf) % paddingStep
