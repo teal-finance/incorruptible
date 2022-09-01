@@ -9,7 +9,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
-	"log"
 	"math/rand"
 )
 

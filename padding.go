@@ -7,7 +7,6 @@ package incorruptible
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 )
 
@@ -43,7 +42,7 @@ func (s *Serializer) appendPadding(buf []byte) []byte {
 	buf = buf[:newSize]
 	_, err := rand.Read(buf[oldSize:newSize])
 	if err != nil {
-		log.Print("ERR Incorruptible appendPadding ", err)
+		log.Error("Incorruptible appendPadding ", err)
 	}
 
 	// the last byte stores the padding size
