@@ -35,7 +35,7 @@ func (s *Serializer) appendPadding(buf []byte) []byte {
 	oldSize := len(buf)
 	newSize := len(buf) + adding
 	if cap(buf) < newSize {
-		log.Panic("Preallocated Buffer has incorrect cap=", cap(buf), " want=", newSize)
+		log.Panic("Preallocated Buffer has incorrect cap=", cap(buf), "want=", newSize)
 	}
 
 	// increase the buffer length

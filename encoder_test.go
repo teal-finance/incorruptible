@@ -97,7 +97,7 @@ func TestDecode(t *testing.T) {
 				if err.Error() == "http: invalid Cookie.Expires" {
 					return
 				}
-				t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed: ", err)
+				t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed:", err)
 			}
 			if err != nil {
 				t.Error("Invalid cookie:", err)
