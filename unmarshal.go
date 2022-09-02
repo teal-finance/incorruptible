@@ -7,7 +7,6 @@ package incorruptible
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/klauspost/compress/s2"
 )
@@ -93,6 +92,6 @@ func parseValues(buf []byte, nV int) ([][]byte, error) {
 
 func printDebug(name string, buf []byte) {
 	if doPrint {
-		log.Printf("DBG Incorr.%s len=%d", name, len(buf))
+		log.Debugf("Incorr.%s len=%d", name, len(buf))
 	}
 }

@@ -9,7 +9,6 @@ import (
 	"crypto/cipher"
 	cryptorand "crypto/rand"
 	"encoding/binary"
-	"log"
 	"math/rand"
 	"net"
 	"net/http"
@@ -19,7 +18,11 @@ import (
 
 	// baseN "github.com/teal-finance/BaseXX/base92" // use another package with same interface.
 	baseN "github.com/mtraver/base91"
+
+	"github.com/teal-finance/emo"
 )
+
+var log = emo.NewZone("inc")
 
 type Incorruptible struct {
 	writeErr WriteErr
@@ -78,7 +81,7 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 
 	incorr.addMinimalistToken()
 
-	log.Printf("INF Incorruptible cookie %s Domain=%v Path=%v Max-Age=%v Secure=%v SameSite=%v HttpOnly=%v",
+	log.Securityf("Incorruptible cookie %s Domain=%v Path=%v Max-Age=%v Secure=%v SameSite=%v HttpOnly=%v",
 		incorr.cookie.Name,
 		incorr.cookie.Domain,
 		incorr.cookie.Path,
@@ -250,12 +253,12 @@ func isLocalhost(urls []*url.URL) bool {
 	if len(urls) > 0 && urls[0].Scheme == "http" {
 		host, _, _ := net.SplitHostPort(urls[0].Host)
 		if host == "localhost" {
-			log.Print("INF Incorruptible in DevMode accepts missing/invalid token ", urls[0])
+			log.Security("Incorruptible in DevMode accepts missing/invalid token ", urls[0])
 			return true
 		}
 	}
 
-	log.Print("INF Incorruptible in ProdMode requires valid token because no http://localhost in first of ", urls)
+	log.Security("Incorruptible in ProdMode requires valid token because no http://localhost in first of ", urls)
 	return false
 }
 

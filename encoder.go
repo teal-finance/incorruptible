@@ -10,7 +10,6 @@ package incorruptible
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -91,7 +90,7 @@ func printS(name, s string) {
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("DBG Incorr.%s len=%d %q", name, len(s), s[:n])
+		log.Debugf("Incorr.%s len=%d %q", name, len(s), s[:n])
 	}
 }
 
@@ -102,14 +101,14 @@ func printB(name string, buf []byte) {
 		if n > 30 {
 			n = 30
 		}
-		log.Printf("DBG Incorr.%s len=%d cap=%d %x", name, len(buf), cap(buf), buf[:n])
+		log.Debugf("Incorr.%s len=%d cap=%d %x", name, len(buf), cap(buf), buf[:n])
 	}
 }
 
 // printV prints TValues in debug mode (when doPrint is true).
 func printV(name string, tv TValues, err error) {
 	if doPrint {
-		log.Printf("DBG Incorr.%s tv %v %v n=%d err=%s", name,
+		log.Debugf("Incorr.%s tv %v %v n=%d err=%s", name,
 			time.Unix(tv.Expires, 0), tv.IP, len(tv.Values), err)
 	}
 }
