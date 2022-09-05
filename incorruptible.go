@@ -22,7 +22,7 @@ import (
 	"github.com/teal-finance/emo"
 )
 
-var log = emo.NewZone("inc")
+var log = emo.NewZone("incorr")
 
 type Incorruptible struct {
 	writeErr WriteErr
