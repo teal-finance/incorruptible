@@ -7,9 +7,9 @@ package incorruptible
 
 import (
 	"crypto/cipher"
-	cryptorand "crypto/rand"
+	crand "crypto/rand"
 	"encoding/binary"
-	"math/rand"
+	mrand "math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -66,7 +66,7 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 
 	// reset the random generator with a strong random seed
 	random := make([]byte, 16) // 16 bytes are required by initRandomGenerator()
-	_, _ = cryptorand.Read(random)
+	_, _ = crand.Read(random)
 	initRandomGenerator(random)
 
 	incorr := Incorruptible{
@@ -125,18 +125,18 @@ func (incorr *Incorruptible) equalMinimalistToken(base91 string) bool {
 func initRandomGenerator(secretKey []byte) {
 	seed := binary.BigEndian.Uint64(secretKey)
 	seed += binary.BigEndian.Uint64(secretKey[8:])
-	rand.Seed(int64(seed))
+	mrand.Seed(int64(seed))
 }
 
 func magicCode() byte {
 	//nolint:gosec // Reproduce MagicCode from same secret seed
-	return byte(rand.Int63())
+	return byte(mrand.Int63())
 }
 
 // shuffle randomizes order of the input string.
 func shuffle(s string) string {
 	r := []rune(s)
-	rand.Shuffle(len(r), func(i, j int) { r[i], r[j] = r[j], r[i] })
+	mrand.Shuffle(len(r), func(i, j int) { r[i], r[j] = r[j], r[i] })
 	return string(r)
 }
 

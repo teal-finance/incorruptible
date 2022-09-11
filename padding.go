@@ -18,6 +18,9 @@ const (
 
 // appendPadding adds a random number of random padding bytes.
 //
+// "math/rand" is 40 times faster than "crypto/rand"
+// see: https://github.com/SimonWaldherr/golang-benchmarks#random
+//
 //nolint:gosec // strong random generator not required for padding
 func (s *Serializer) appendPadding(buf []byte) []byte {
 	// computes the number of trailing bytes to fill the padding

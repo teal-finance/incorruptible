@@ -48,6 +48,9 @@ func newSerializer(tv TValues) Serializer {
 // The compression decision is a bit randomized
 // to limit the "chosen plaintext" attack.
 //
+// "math/rand" is 40 times faster than "crypto/rand"
+// see: https://github.com/SimonWaldherr/golang-benchmarks#random
+//
 //nolint:gosec // strong random generator not required here
 func doesCompress(payloadSize int) bool {
 	switch {

@@ -73,6 +73,9 @@ func (meta Metadata) PayloadMinSize() int {
 
 // PutHeader fills the magic code, the salt and the metadata.
 //
+// "math/rand" is 40 times faster than "crypto/rand"
+// see: https://github.com/SimonWaldherr/golang-benchmarks#random
+//
 //nolint:gosec // strong random generator not required here
 func (meta Metadata) PutHeader(buf []byte, magic uint8) {
 	buf[0] = magic

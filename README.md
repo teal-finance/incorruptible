@@ -115,9 +115,11 @@ The key is 128 bits, since 256 bits are not yet relevant
 
 The encryption depends only on standard Go library.
 The package `"math/rand"` is used when
-a strong random number generator is not needed.
-The user should call `rand.Seed()`
-to randomize the `"math/rand"` generator.
+a strong random number generator is not required
+(`"math/rand"` is
+[40 times faster](https://github.com/SimonWaldherr/golang-benchmarks#random)
+than `"crypto/rand"`).
+The user may call `rand.Seed()` to randomize the `"math/rand"` generator.
 In the future, _Incorruptible_ may use something like [fastrand].
 
 Read more about our [security design](docs/security-design.md).

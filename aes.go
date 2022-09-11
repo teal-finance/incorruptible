@@ -72,6 +72,9 @@ func NewAESCipher(secretKey []byte) (cipher.AEAD, error) {
 // provides a check that it hasn't been altered.
 // Output takes the form "nonce|ciphertext|tag" where '|' indicates concatenation.
 //
+// "math/rand" is 40 times faster than "crypto/rand"
+// see: https://github.com/SimonWaldherr/golang-benchmarks#random
+//
 //nolint:gosec // strong random generator not required for nonce
 func Encrypt(gcm cipher.AEAD, plaintext []byte) []byte {
 	predictedTotalSize := nonceSize + len(plaintext) + gcmTagSize
