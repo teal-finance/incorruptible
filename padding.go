@@ -45,7 +45,7 @@ func (s *Serializer) appendPadding(buf []byte) []byte {
 	buf = buf[:newSize]
 	_, err := rand.Read(buf[oldSize:newSize])
 	if err != nil {
-		log.Error("Incorruptible appendPadding ", err)
+		log.Panic("appendPadding rand.Read", err)
 	}
 
 	// the last byte stores the padding size

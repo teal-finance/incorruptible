@@ -47,7 +47,7 @@ const (
 func NewAESCipher(secretKey []byte) (cipher.AEAD, error) {
 	if len(secretKey) != 16 {
 		// prefer 16 bytes (AES-128, faster) over 32 (AES-256, irrelevant extra security).
-		log.Panic("Want 128-bit AES key containing 16 bytes, but got ", len(secretKey))
+		log.Panic("Want 128-bit AES key containing 16 bytes, but got", len(secretKey))
 	}
 
 	block, err := aes.NewCipher(secretKey)

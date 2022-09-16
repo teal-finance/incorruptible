@@ -56,7 +56,7 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 
 	c, err := NewAESCipher(secretKey)
 	if err != nil {
-		log.Panic("AES NewCipher ", err)
+		log.Panic("AES NewCipher", err)
 	}
 
 	// initializes the random generator with a reproducible secret seed
@@ -81,14 +81,9 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 
 	incorr.addMinimalistToken()
 
-	log.Securityf("Incorruptible cookie %s Domain=%v Path=%v Max-Age=%v Secure=%v SameSite=%v HttpOnly=%v",
-		incorr.cookie.Name,
-		incorr.cookie.Domain,
-		incorr.cookie.Path,
-		incorr.cookie.MaxAge,
-		incorr.cookie.Secure,
-		incorr.cookie.SameSite,
-		incorr.cookie.HttpOnly)
+	log.Securityf("Cookie %s Domain=%v Path=%v Max-Age=%v Secure=%v SameSite=%v HttpOnly=%v Value=%d bytes",
+		incorr.cookie.Name, incorr.cookie.Domain, incorr.cookie.Path, incorr.cookie.MaxAge,
+		incorr.cookie.Secure, incorr.cookie.SameSite, incorr.cookie.HttpOnly, len(incorr.cookie.Value))
 
 	return &incorr
 }
@@ -102,7 +97,7 @@ func (incorr *Incorruptible) addMinimalistToken() {
 	// including encryption and Base91-encoding
 	token, err := incorr.Encode(EmptyTValues())
 	if err != nil {
-		log.Panic("addMinimalistToken ", err)
+		log.Panic(err)
 	}
 
 	// insert this generated token in the cookie
@@ -238,12 +233,10 @@ func extractMainDomain(u *url.URL) (secure bool, dns, dir string) {
 	switch {
 	case u.Scheme == HTTP:
 		secure = false
-
 	case u.Scheme == HTTPS:
 		secure = true
-
 	default:
-		log.Panic("Unexpected scheme in ", u)
+		log.Panicf("Unexpected protocol scheme in %+v", u)
 	}
 
 	return secure, u.Hostname(), u.Path
@@ -253,12 +246,12 @@ func isLocalhost(urls []*url.URL) bool {
 	if len(urls) > 0 && urls[0].Scheme == "http" {
 		host, _, _ := net.SplitHostPort(urls[0].Host)
 		if host == "localhost" {
-			log.Security("Incorruptible in DevMode accepts missing/invalid token ", urls[0])
+			log.Security("DevMode accepts missing/invalid token from", urls[0])
 			return true
 		}
 	}
 
-	log.Security("Incorruptible in ProdMode requires valid token because no http://localhost in first of ", urls)
+	log.Security("ProdMode requires valid token: no http://localhost in first of", urls)
 	return false
 }
 
