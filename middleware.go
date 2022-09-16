@@ -41,15 +41,15 @@ func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
 // Chk finally stores the decoded token in the request context.
 // In dev. mode, Chk accepts requests without valid cookie but does not store invalid tokens.
 func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
-	log.Security("Middleware Incorruptible.Chk cookie DevMode=", incorr.IsDev)
+	log.Security("Middleware Incorruptible.Chk cookie only") // cookie DevMode=", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tv, err := incorr.DecodeCookieToken(r)
 		switch {
 		case err == nil: // OK: put the token in the request context
 			r = tv.ToCtx(r)
-		case incorr.IsDev:
-			printErr("Chk DevMode no cookie", err)
+		// case incorr.IsDev:
+		//	printErr("Chk DevMode no cookie", err)
 		default:
 			incorr.writeErr(w, r, http.StatusUnauthorized, err)
 			return
@@ -63,16 +63,17 @@ func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
 // Vet finally stores the decoded token in the request context.
 // In dev. mode, Vet accepts requests without a valid token but does not store invalid tokens.
 func (incorr *Incorruptible) Vet(next http.Handler) http.Handler {
-	log.Security("Middleware Incorruptible.Vet cookie/bearer DevMode=", incorr.IsDev)
+	log.Security("Middleware Incorruptible.Vet cookie/bearer") //  DevMode=", incorr.IsDev)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tv, err := incorr.DecodeToken(r)
 		switch {
 		case err == nil:
 			r = tv.ToCtx(r) // put the token in the request context
-		case !incorr.IsDev:
-			incorr.writeErr(w, r, http.StatusUnauthorized, err...)
-			return
+		// case !incorr.IsDev:
+		default:
+			//	incorr.writeErr(w, r, http.StatusUnauthorized, err...)
+			//	return
 		}
 		next.ServeHTTP(w, r)
 	})

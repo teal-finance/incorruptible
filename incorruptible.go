@@ -29,10 +29,10 @@ type Incorruptible struct {
 	writeErr WriteErr
 	SetIP    bool // If true => put the remote IP in the token.
 	cookie   http.Cookie
-	IsDev    bool
-	cipher   cipher.AEAD
-	magic    byte
-	baseN    *baseN.Encoding
+	// IsDev    bool
+	cipher cipher.AEAD
+	magic  byte
+	baseN  *baseN.Encoding
 }
 
 const (
@@ -72,10 +72,10 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 		writeErr: writeErr,
 		SetIP:    setIP,
 		cookie:   emptyCookie(cookieName, secure, dns, dir, maxAge),
-		IsDev:    isLocalhost(urls),
-		cipher:   c,
-		magic:    magic,
-		baseN:    baseN.NewEncoding(encodingAlphabet),
+		// IsDev:    isLocalhost(urls),
+		cipher: c,
+		magic:  magic,
+		baseN:  baseN.NewEncoding(encodingAlphabet),
 	}
 
 	incorr.addMinimalistToken()
