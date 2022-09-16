@@ -3,6 +3,7 @@
 // a tiny+secured cookie token licensed under the MIT License.
 // SPDX-License-Identifier: MIT
 
+//nolint:ireturn // Get(*TValues) returns the KVal interface to comply with that interface.
 package incorruptible
 
 import (
@@ -188,10 +189,10 @@ func (kv KInt64) Set(tv *TValues) error  { return tv.SetInt64(kv.Key, kv.Val) }
 func (kv KBool) Set(tv *TValues) error   { return tv.SetBool(kv.Key, kv.Val) }
 func (kv KString) Set(tv *TValues) error { return tv.SetString(kv.Key, kv.Val) }
 
-func (kv KUint64) Get(tv *TValues) (_ KVal, e error) { kv.Val, e = tv.Uint64(kv.Key); return kv, e }
-func (kv KInt64) Get(tv *TValues) (_ KVal, e error)  { kv.Val, e = tv.Int64(kv.Key); return kv, e }
-func (kv KBool) Get(tv *TValues) (_ KVal, e error)   { kv.Val, e = tv.Bool(kv.Key); return kv, e }
-func (kv KString) Get(tv *TValues) (_ KVal, e error) { kv.Val, e = tv.String(kv.Key); return kv, e }
+func (kv KUint64) Get(tv *TValues) (KVal, error) { v, e := tv.Uint64(kv.Key); kv.Val = v; return kv, e }
+func (kv KInt64) Get(tv *TValues) (KVal, error)  { v, e := tv.Int64(kv.Key); kv.Val = v; return kv, e }
+func (kv KBool) Get(tv *TValues) (KVal, error)   { v, e := tv.Bool(kv.Key); kv.Val = v; return kv, e }
+func (kv KString) Get(tv *TValues) (KVal, error) { v, e := tv.String(kv.Key); kv.Val = v; return kv, e }
 
 func (kv KUint64) Uint64() uint64 { return kv.Val }
 func (kv KInt64) Uint64() uint64  { return uint64(kv.Val) }

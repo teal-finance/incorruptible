@@ -22,6 +22,7 @@ import (
 	"github.com/teal-finance/emo"
 )
 
+//nolint:gochecknoglobals // global logger
 var log = emo.NewZone("incorr")
 
 type Incorruptible struct {
@@ -225,6 +226,7 @@ const (
 	HTTPS = "https"
 )
 
+//nolint:nonamedreturns // we want to document the returned values.
 func extractMainDomain(u *url.URL) (secure bool, dns, dir string) {
 	if u == nil {
 		log.Panic("No URL => Cannot set Cookie domain")

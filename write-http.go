@@ -34,6 +34,8 @@ func defaultWriteErr(w http.ResponseWriter, r *http.Request, statusCode int, mes
 	}
 
 	buf = append(buf, '}')
+
+	//nolint:errcheck // we do not care if write has failed
 	w.Write(buf)
 }
 
