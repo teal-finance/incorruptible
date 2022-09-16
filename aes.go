@@ -79,7 +79,7 @@ func NewAESCipher(secretKey []byte) (cipher.AEAD, error) {
 func Encrypt(gcm cipher.AEAD, plaintext []byte) []byte {
 	predictedTotalSize := nonceSize + len(plaintext) + gcmTagSize
 	nonce := make([]byte, nonceSize, predictedTotalSize)
-	_, _ = rand.Read(nonce)
+	rand.Read(nonce)
 	ciphertextAndTag := gcm.Seal(nil, nonce, plaintext, nil)
 	return append(nonce, ciphertextAndTag...)
 }

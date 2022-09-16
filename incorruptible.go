@@ -66,7 +66,7 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 
 	// reset the random generator with a strong random seed
 	random := make([]byte, 16) // 16 bytes are required by initRandomGenerator()
-	_, _ = crand.Read(random)
+	crand.Read(random)
 	initRandomGenerator(random)
 
 	incorr := Incorruptible{

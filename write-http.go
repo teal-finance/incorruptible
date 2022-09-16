@@ -34,7 +34,7 @@ func defaultWriteErr(w http.ResponseWriter, r *http.Request, statusCode int, mes
 	}
 
 	buf = append(buf, '}')
-	_, _ = w.Write(buf)
+	w.Write(buf)
 }
 
 func appendMessages(buf []byte, messages []any) []byte {
