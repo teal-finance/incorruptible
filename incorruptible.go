@@ -60,15 +60,13 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 		log.Panic("AES NewCipher", err)
 	}
 
-	// initializes the random generator with a reproducible secret seed
-	initRandomGenerator(secretKey)
+	// initialize the random generator with a reproducible secret seed
+	resetRandomGenerator(secretKey)
 	magic := magicCode()
 	encodingAlphabet := shuffle(noSpaceDoubleQuoteSemicolon)
 
 	// reset the random generator with a strong random seed
-	random := make([]byte, 16) // 16 bytes are required by initRandomGenerator()
-	crand.Read(random)
-	initRandomGenerator(random)
+	resetRandomGenerator(nil)
 
 	incorr := Incorruptible{
 		writeErr: writeErr,
@@ -115,12 +113,19 @@ func (incorr *Incorruptible) equalMinimalistToken(base91 string) bool {
 	return incorr.useMinimalistToken() && (base91 == incorr.cookie.Value[schemeSize:])
 }
 
-// initRandomGenerator can be used to
-// initializes the random generator
-// with a reproducible secret seed.
-func initRandomGenerator(secretKey []byte) {
-	seed := binary.BigEndian.Uint64(secretKey)
-	seed += binary.BigEndian.Uint64(secretKey[8:])
+// resetRandomGenerator resets the "math.rand" generator from 16 bytes.
+// This function is used to initialize the random generator with a reproducible secret seed.
+// If no bytes are passed, resetRandomGenerator resets the "math.rand" generator with a strong random seed.
+func resetRandomGenerator(bytes []byte) {
+	if len(bytes) == 0 {
+		bytes = make([]byte, 16)
+		_, err := crand.Read(bytes)
+		if err != nil {
+			log.Panic(err)
+		}
+	}
+	seed := binary.BigEndian.Uint64(bytes)
+	seed += binary.BigEndian.Uint64(bytes[8:])
 	mrand.Seed(int64(seed))
 }
 
