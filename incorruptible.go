@@ -211,7 +211,9 @@ func (incorr *Incorruptible) DeadCookie() *http.Cookie {
 	return &cookie
 }
 
-// Cookie returns a default cookie to facilitate testing.
+// Cookie returns a pointer to the default cookie values.
+// This can be used to customize some cookie values (may break),
+// and also to facilitate testing.
 func (incorr *Incorruptible) Cookie(_ int) *http.Cookie {
 	return &incorr.cookie
 }
