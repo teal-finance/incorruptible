@@ -25,7 +25,7 @@ func (incorr *Incorruptible) Set(next http.Handler) http.Handler {
 			// no valid token found => set a new token
 			cookie, newDT, err := incorr.NewCookie(r)
 			if err != nil {
-				log.Warning("Middleware IncorruptibleSet", err)
+				log.S().Warning("Middleware IncorruptibleSet", err)
 				return
 			}
 			http.SetCookie(w, cookie)
