@@ -77,8 +77,9 @@ func NewAESCipher(secretKey []byte) (cipher.AEAD, error) {
 //
 //nolint:gosec // strong random generator not required for nonce
 func Encrypt(gcm cipher.AEAD, plaintext []byte) []byte {
+	// all will contain the nonce (first 12 bytes) + the cypher text + the GCM tag
 	all := make([]byte, nonceSize, nonceSize+len(plaintext)+gcmTagSize)
-	rand.Read(all) // only write the nonce part (first 12 bytes)
+	rand.Read(all) // write the nonce part only (first 12 bytes)
 	all = gcm.Seal(all, all, plaintext, nil)
 	return all
 }
@@ -87,8 +88,10 @@ func Encrypt(gcm cipher.AEAD, plaintext []byte) []byte {
 // This both hides the content of the data and
 // provides a check that it hasn't been altered.
 // Expects input form "nonce|ciphertext|tag" where '|' indicates concatenation.
-func Decrypt(gcm cipher.AEAD, nonceAndCiphertextAndTag []byte) ([]byte, error) {
-	nonce := nonceAndCiphertextAndTag[:nonceSize]
-	ciphertextAndTag := nonceAndCiphertextAndTag[nonceSize:]
-	return gcm.Open(ciphertextAndTag[:0], nonce, ciphertextAndTag, nil)
+// The parameter `all` must contain the nonce (first 12 bytes) + the cypher text + the GCM tag.
+func Decrypt(gcm cipher.AEAD, all []byte) ([]byte, error) {
+	nonce := all[:nonceSize]
+	ciphertextAndTag := all[nonceSize:]
+	dst := ciphertextAndTag[:0]
+	return gcm.Open(dst, nonce, ciphertextAndTag, nil)
 }
