@@ -77,11 +77,10 @@ func NewAESCipher(secretKey []byte) (cipher.AEAD, error) {
 //
 //nolint:gosec // strong random generator not required for nonce
 func Encrypt(gcm cipher.AEAD, plaintext []byte) []byte {
-	predictedTotalSize := nonceSize + len(plaintext) + gcmTagSize
-	nonce := make([]byte, nonceSize, predictedTotalSize)
-	rand.Read(nonce)
-	ciphertextAndTag := gcm.Seal(nil, nonce, plaintext, nil)
-	return append(nonce, ciphertextAndTag...)
+	all := make([]byte, nonceSize, nonceSize+len(plaintext)+gcmTagSize)
+	rand.Read(all) // only write the nonce part (first 12 bytes)
+	all = gcm.Seal(all, all, plaintext, nil)
+	return all
 }
 
 // Decrypt decrypts data using 256-bit AES-GCM.
@@ -91,5 +90,5 @@ func Encrypt(gcm cipher.AEAD, plaintext []byte) []byte {
 func Decrypt(gcm cipher.AEAD, nonceAndCiphertextAndTag []byte) ([]byte, error) {
 	nonce := nonceAndCiphertextAndTag[:nonceSize]
 	ciphertextAndTag := nonceAndCiphertextAndTag[nonceSize:]
-	return gcm.Open(nil, nonce, ciphertextAndTag, nil)
+	return gcm.Open(ciphertextAndTag[:0], nonce, ciphertextAndTag, nil)
 }
