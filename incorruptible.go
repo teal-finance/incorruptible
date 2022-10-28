@@ -10,7 +10,6 @@ import (
 	crand "crypto/rand"
 	"encoding/binary"
 	mrand "math/rand"
-	"net"
 	"net/http"
 	"net/url"
 	"path"
@@ -29,10 +28,9 @@ type Incorruptible struct {
 	writeErr WriteErr
 	SetIP    bool // If true => put the remote IP in the token.
 	cookie   http.Cookie
-	// IsDev    bool
-	cipher cipher.AEAD
-	magic  byte
-	baseN  *baseN.Encoding
+	cipher   cipher.AEAD
+	magic    byte
+	baseN    *baseN.Encoding
 }
 
 const (
@@ -72,10 +70,9 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 		writeErr: writeErr,
 		SetIP:    setIP,
 		cookie:   emptyCookie(cookieName, secure, dns, dir, maxAge),
-		// IsDev:    isLocalhost(urls),
-		cipher: c,
-		magic:  magic,
-		baseN:  baseN.NewEncoding(encodingAlphabet),
+		cipher:   c,
+		magic:    magic,
+		baseN:    baseN.NewEncoding(encodingAlphabet),
 	}
 
 	incorr.addMinimalistToken()
@@ -251,18 +248,19 @@ func extractMainDomain(u *url.URL) (secure bool, dns, dir string) {
 	return secure, u.Hostname(), u.Path
 }
 
-func isLocalhost(urls []*url.URL) bool {
-	if len(urls) > 0 && urls[0].Scheme == "http" {
-		host, _, _ := net.SplitHostPort(urls[0].Host)
-		if host == "localhost" {
-			log.Security("DevMode accepts missing/invalid token from", urls[0])
-			return true
-		}
-	}
-
-	log.Security("ProdMode requires valid token: no http://localhost in first of", urls)
-	return false
-}
+// This function was used to trigger the dev. mode
+// func isLocalhost(urls []*url.URL) bool {
+// 	if len(urls) > 0 && urls[0].Scheme == "http" {
+// 		host, _, _ := net.SplitHostPort(urls[0].Host)
+// 		if host == "localhost" {
+// 			log.Security("DevMode accepts missing/invalid token from", urls[0])
+// 			return true
+// 		}
+// 	}
+//
+// 	log.Security("ProdMode requires valid token: no http://localhost in first of", urls)
+// 	return false
+// }
 
 func emptyCookie(name string, secure bool, dns, dir string, maxAge int) http.Cookie {
 	dir = path.Clean(dir)
