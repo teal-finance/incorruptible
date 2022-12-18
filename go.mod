@@ -3,7 +3,7 @@ module github.com/teal-finance/incorruptible
 go 1.19
 
 require (
-	github.com/klauspost/compress v1.15.12
+	github.com/klauspost/compress v1.15.13
 	github.com/mtraver/base91 v1.0.0
 	github.com/teal-finance/emo v0.0.0-20221020231838-605890cfa1bd
 )

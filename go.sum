@@ -1,12 +1,8 @@
 github.com/acmacalister/skittles v0.0.0-20160609003031-7423546701e1 h1:RKnVV4C7qoN/sToLX2y1dqH7T6kKLMHcwRJlgwb9Ggk=
 github.com/acmacalister/skittles v0.0.0-20160609003031-7423546701e1/go.mod h1:gI5CyA/CEnS6eqNV22rqs4dG3aGfaSbXgPORIlwr2r0=
-github.com/klauspost/compress v1.15.10 h1:Ai8UzuomSCDw90e1qNMtb15msBXsNpH6gzkkENQNcJo=
-github.com/klauspost/compress v1.15.10/go.mod h1:QPwzmACJjUTFsnSHH934V6woptycfrDDJnH7hvFVbGM=
-github.com/klauspost/compress v1.15.12 h1:YClS/PImqYbn+UILDnqxQCZ3RehC9N318SU3kElDUEM=
-github.com/klauspost/compress v1.15.12/go.mod h1:QPwzmACJjUTFsnSHH934V6woptycfrDDJnH7hvFVbGM=
+github.com/klauspost/compress v1.15.13 h1:NFn1Wr8cfnenSJSA46lLq4wHCcBzKTSjnBIexDMMOV0=
+github.com/klauspost/compress v1.15.13/go.mod h1:QPwzmACJjUTFsnSHH934V6woptycfrDDJnH7hvFVbGM=
 github.com/mtraver/base91 v1.0.0 h1:vkIW96Xbw7QH1fbSV5VwXqv+xVuWWZji4O4ty8yYk28=
 github.com/mtraver/base91 v1.0.0/go.mod h1:Igwspit339nKvBhXGqrNOaNI8qGvh+Y4P76q5g4qH2Y=
-github.com/teal-finance/emo v0.0.0-20220914195410-20b6929a3239 h1:dqrLueB0LUeNq8QGzUt8l1EcuuDd24SBd2CfXORyjsw=
-github.com/teal-finance/emo v0.0.0-20220914195410-20b6929a3239/go.mod h1:1PNyO4kPCk3rmmQr5bDpsuvLIrIZ3YDvYqecRdU4Nzo=
 github.com/teal-finance/emo v0.0.0-20221020231838-605890cfa1bd h1:QqBCAak6sJaiq+2g8SE+jbYBvCn9jP0aPtnWvCD+jC0=
 github.com/teal-finance/emo v0.0.0-20221020231838-605890cfa1bd/go.mod h1:LkXZJ/yRHmJdqK3HA1r+c6WsRYrl/slowgilyjnAh+o=
