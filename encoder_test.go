@@ -92,14 +92,14 @@ func TestDecode(t *testing.T) {
 			}
 
 			err = cookie.Valid()
-			if cookie.Expires.IsZero() {
-				// https://github.com/golang/go/issues/52989
-				if err.Error() == "http: invalid Cookie.Expires" {
-					return
-				}
-				t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed:", err)
-			}
 			if err != nil {
+				if cookie.Expires.IsZero() {
+					// https://github.com/golang/go/issues/52989
+					if err.Error() == "http: invalid Cookie.Expires" {
+						return
+					}
+					t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed:", err)
+				}
 				t.Error("Invalid cookie:", err)
 			}
 		})
