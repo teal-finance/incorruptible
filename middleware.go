@@ -58,6 +58,12 @@ func (incorr *Incorruptible) Chk(next http.Handler) http.Handler {
 	})
 }
 
+func printErr(str string, err error) {
+	if doPrint {
+		log.Debugf("Incorr.%s: %v", str, err)
+	}
+}
+
 // Vet is a middleware accepting requests having a valid Incorruptible token
 // either in the cookie or in the first "Authorization" header.
 // Vet finally stores the decoded token in the request context.
@@ -196,10 +202,4 @@ func trimBearerScheme(auth string) (string, error) {
 	}
 	tokenBase91 := auth[prefixSize:]
 	return tokenBase91, nil
-}
-
-func printErr(str string, err error) {
-	if doPrint {
-		log.Debugf("Incorr.%s: %v", str, err)
-	}
 }
