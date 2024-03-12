@@ -9,7 +9,7 @@ import (
 	"crypto/cipher"
 	crand "crypto/rand"
 	"encoding/binary"
-	mrand "math/rand"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"path"
@@ -123,18 +123,18 @@ func resetRandomGenerator(bytes []byte) {
 	}
 	seed := binary.BigEndian.Uint64(bytes)
 	seed += binary.BigEndian.Uint64(bytes[8:])
-	mrand.Seed(int64(seed))
+	rand.New(rand.NewSource(int64(seed)))
 }
 
 func magicCode() byte {
 	//nolint:gosec // Reproduce MagicCode from same secret seed
-	return byte(mrand.Int63())
+	return byte(rand.Int63())
 }
 
 // shuffle randomizes order of the input string.
 func shuffle(s string) string {
 	r := []rune(s)
-	mrand.Shuffle(len(r), func(i, j int) { r[i], r[j] = r[j], r[i] })
+	rand.Shuffle(len(r), func(i, j int) { r[i], r[j] = r[j], r[i] })
 	return string(r)
 }
 
