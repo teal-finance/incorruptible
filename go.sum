@@ -6,3 +6,7 @@ github.com/mtraver/base91 v1.0.0 h1:vkIW96Xbw7QH1fbSV5VwXqv+xVuWWZji4O4ty8yYk28=
 github.com/mtraver/base91 v1.0.0/go.mod h1:Igwspit339nKvBhXGqrNOaNI8qGvh+Y4P76q5g4qH2Y=
 github.com/teal-finance/emo v0.0.0-20240312100810-1c5a4984c875 h1:RnmvqAhW+/FDr6/mq+RiVIn99GeA7ZJ/7I2ZpUpUp4Q=
 github.com/teal-finance/emo v0.0.0-20240312100810-1c5a4984c875/go.mod h1:6hK1rbr+8RV2tB4BPDYgRFqgZsFiaTddz6gXbW8YVZE=
+golang.org/x/crypto v0.21.0 h1:X31++rzVUdKhX5sWmSOFZxx8UW/ldWx55cbf08iNAMA=
+golang.org/x/crypto v0.21.0/go.mod h1:0BP7YvVV9gBbVKyeTG0Gyn+gZm94bibOW5BjDEYAOMs=
+golang.org/x/sys v0.18.0 h1:DBdB3niSjOA/O0blCZBqDefyWNYveAYMNF1Wum0DYQ4=
+golang.org/x/sys v0.18.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=

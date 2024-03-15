@@ -18,7 +18,7 @@ const (
 	// on any change about expiry encoding size, padding size...
 	Base91MinSize     = 42
 	ciphertextMinSize = 6
-	encryptedMinSize  = nonceSize + ciphertextMinSize + gcmTagSize
+	encryptedMinSize  = aesNonceSize + ciphertextMinSize + gcmTagSize
 
 	// noSpaceDoubleQuoteSemicolon exclude character not welcome in cookie token:
 	// space, double-quote ", semi-colon ; and back-slash \
@@ -41,10 +41,10 @@ func (incorr *Incorruptible) Encode(tv TValues) (string, error) {
 	}
 	printB("Encode Encrypt plaintext", plaintext)
 
-	nonceAndCiphertextAndTag := Encrypt(incorr.cipher, plaintext)
-	printB("Encode EncodeToString ciphertext", nonceAndCiphertextAndTag)
+	nonceCiphertextAndTag := Encrypt(incorr.cipher, plaintext)
+	printB("Encode EncodeToString ciphertext", nonceCiphertextAndTag)
 
-	str := incorr.baseN.EncodeToString(nonceAndCiphertextAndTag)
+	str := incorr.baseN.EncodeToString(nonceCiphertextAndTag)
 	printS("Encode result = BasE91", str)
 	return str, nil
 }

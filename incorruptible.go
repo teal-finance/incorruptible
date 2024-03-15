@@ -53,10 +53,7 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 
 	secure, dns, dir := extractMainDomain(urls[0])
 
-	c, err := NewAESCipher(secretKey)
-	if err != nil {
-		log.Panic("AES NewCipher", err)
-	}
+	cipher := NewCipher(secretKey)
 
 	// initialize the random generator with a reproducible secret seed
 	resetRandomGenerator(secretKey)
@@ -69,8 +66,8 @@ func New(writeErr WriteErr, urls []*url.URL, secretKey []byte, cookieName string
 	incorr := Incorruptible{
 		writeErr: writeErr,
 		SetIP:    setIP,
-		cookie:   emptyCookie(cookieName, secure, dns, dir, maxAge),
-		cipher:   c,
+		cookie:   newCookie(cookieName, secure, dns, dir, maxAge),
+		cipher:   cipher,
 		magic:    magic,
 		baseN:    baseN.NewEncoding(encodingAlphabet),
 	}
@@ -262,7 +259,7 @@ func extractMainDomain(u *url.URL) (secure bool, dns, dir string) {
 // 	return false
 // }
 
-func emptyCookie(name string, secure bool, dns, dir string, maxAge int) http.Cookie {
+func newCookie(name string, secure bool, dns, dir string, maxAge int) http.Cookie {
 	dir = path.Clean(dir)
 	if dir == "." {
 		dir = "/"

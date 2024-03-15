@@ -12,19 +12,27 @@ This package has been inspired from:
 - <https://go.dev/blog/tls-cipher-suites>
 - <https://github.com/gtank/cryptopasta>
 
-## AES-128
+## Supported ciphers
 
-The underlying algorithm is AES-128 GCM:
+Cipher            | Secret key length
+------------------|--------------------
+AES-128 GCM       | 128 bits (16 bytes)
+ChaCha20-Poly1305 | 256 bits (32 bytes)
+
+Incorruptible selects the cipher depending on the length of the provided secret key.
+
+The AES cipher should be used on AES-supported hardware only
+like AMD/Intel processors providing optimized AES instructions set.
+
+If this is not your case, please provide a 32-bytes key
+to select the ChaCha20-Poly1305 cipher.
+
+## AES-128 GCM
+
+Advantages:
 
 - AES is a symmetric encryption, faster than asymmetric (e.g. RSA)
 - 128-bit key is sufficient for most usages (256-bits is much slower)
-
-## Assumption design
-
-This library should be used on AES-supported hardware
-like AMD/Intel processors providing optimized AES instructions set.
-If this is not your case, please report a feature request
-to implement support for ChaCha20Poly1305.
 
 ## Galois Counter Mode
 

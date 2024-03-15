@@ -94,24 +94,21 @@ The current trend towards symmetric encryption
 prefers ChaCha20 / Poly1305 (server-side).
 In addition to its cryptographic qualities,
 ChaCha20 is easy to configure and requires
-few CPU/memory resources.
+few CPU/memory resources (chosen by Wireguard).
 
 On the other hand, AES is faster
 on AMD/Intel processors (optimized instructions).
 In addition, the Go crypto allows
 easy and secure AES configuration.
 
-Currently, we plan to use only AMD/Intel hardware (this may change).
-Therefore, we currently prefer hardwired AES instructions
-over ChaCha20 / Poly1305 (as chosen by Wireguard).
+Therefore, Incorruptible supports both ciphers:
+
+- ChaCha20-Poly1305
+- AES-128 (256 bits is not relevant for fast short cookie)
 
 We place more emphasis on mastering
 the encryption configuration than on performance.
 See also <https://go.dev/blog/tls-cipher-suites>.
-
-Therefore, this package currently uses only AES-GCM.
-The key is 128 bits, since 256 bits are not yet relevant
-(this may also change).
 
 The encryption depends only on standard Go library.
 The package `"math/rand"` is used when
@@ -120,13 +117,10 @@ a strong random number generator is not required
 [40 times faster](https://github.com/SimonWaldherr/golang-benchmarks#random)
 than `"crypto/rand"`).
 The user may call `rand.Seed()` to randomize the `"math/rand"` generator.
-In the future, _Incorruptible_ may use something like [fastrand].
 
 Read more about our [security design](docs/security-design.md).
 
 Please share your thoughts on security or other topics.
-
-[fastrand]: https://github.com/zhangyunhao116/fastrand
 
 ## 🍪 Encoding format
 

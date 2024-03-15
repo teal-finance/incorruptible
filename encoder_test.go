@@ -27,82 +27,86 @@ func TestDecode(t *testing.T) {
 			return
 		}
 
-		key := [16]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6}
+		aesKey := "1234567890" + "123456"                           // 16 bytes = AES 128-bit key
+		chaKey := "1234567890" + "1234567890" + "1234567890" + "12" // 32 bytes = 256-bit ChaCha20-Poly1305 key
+		for _, key := range []string{aesKey, chaKey} {
+			secretKey := []byte(key)
 
-		incorr := incorruptible.New(nil, []*url.URL{u}, key[:], "session", 0, true)
+			incorr := incorruptible.New(nil, []*url.URL{u}, secretKey, "session", 0, true)
 
-		t.Run(c.name, func(t *testing.T) {
-			t.Parallel()
+			t.Run(c.name, func(t *testing.T) {
+				t.Parallel()
 
-			c.tv.ShortenIP4Length()
+				c.tv.ShortenIP4Length()
 
-			token, err := incorr.Encode(c.tv)
-			if (err == nil) && c.wantErr {
-				t.Errorf("Encode() no error but want an error")
-				return
-			}
-			if (err != nil) && !c.wantErr {
-				t.Errorf("Encode() err=%v, want no error", err)
-				return
-			}
-			if err != nil {
-				t.Log("Encode() OK err=", err)
-				return
-			}
-
-			n := len(token)
-			t.Log("len(token) =", n)
-			if n < incorruptible.Base91MinSize {
-				t.Error("len(token) < Base91MinSize =", incorruptible.Base91MinSize)
-				return
-			}
-			if n > 70 {
-				n = 70 // print max the first 70 characters
-			}
-			t.Logf("str len=%d [:%d]=%q", len(token), n, token[:n])
-
-			got, err := incorr.Decode(token)
-			if err != nil {
-				t.Error("Decode() error =", err)
-				return
-			}
-
-			min := c.tv.Expires - incorruptible.PrecisionInSeconds
-			max := c.tv.Expires + incorruptible.PrecisionInSeconds
-			validExpiry := (min <= got.Expires) && (got.Expires <= max)
-			if !validExpiry {
-				t.Errorf("Expiry too different got=%v original=%v want in [%d %d]",
-					got.Expires, c.tv.Expires, min, max)
-			}
-
-			if (len(got.IP) > 0 || len(c.tv.IP) > 0) &&
-				!reflect.DeepEqual(got.IP, c.tv.IP) {
-				t.Errorf("Mismatch IP got %v, want %v", got.IP, c.tv.IP)
-			}
-
-			if (len(got.Values) > 0 || len(c.tv.Values) > 0) &&
-				!reflect.DeepEqual(got.Values, c.tv.Values) {
-				t.Errorf("Mismatch Values got %v, want %v", got.Values, c.tv.Values)
-			}
-
-			cookie, err := incorr.NewCookieFromValues(c.tv)
-			if err != nil {
-				t.Error("NewCookie()", err)
-				return
-			}
-
-			err = cookie.Valid()
-			if err != nil {
-				if cookie.Expires.IsZero() {
-					// https://github.com/golang/go/issues/52989
-					if err.Error() == "http: invalid Cookie.Expires" {
-						return
-					}
-					t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed:", err)
+				token, err := incorr.Encode(c.tv)
+				if (err == nil) && c.wantErr {
+					t.Errorf("Encode() no error but want an error")
+					return
 				}
-				t.Error("Invalid cookie:", err)
-			}
-		})
+				if (err != nil) && !c.wantErr {
+					t.Errorf("Encode() err=%v, want no error", err)
+					return
+				}
+				if err != nil {
+					t.Log("Encode() OK err=", err)
+					return
+				}
+
+				n := len(token)
+				t.Log("len(token) =", n)
+				if n < incorruptible.Base91MinSize {
+					t.Error("len(token) < Base91MinSize =", incorruptible.Base91MinSize)
+					return
+				}
+				if n > 70 {
+					n = 70 // print max the first 70 characters
+				}
+				t.Logf("str len=%d [:%d]=%q", len(token), n, token[:n])
+
+				got, err := incorr.Decode(token)
+				if err != nil {
+					t.Error("Decode() error =", err)
+					return
+				}
+
+				min := c.tv.Expires - incorruptible.PrecisionInSeconds
+				max := c.tv.Expires + incorruptible.PrecisionInSeconds
+				validExpiry := (min <= got.Expires) && (got.Expires <= max)
+				if !validExpiry {
+					t.Errorf("Expiry too different got=%v original=%v want in [%d %d]",
+						got.Expires, c.tv.Expires, min, max)
+				}
+
+				if (len(got.IP) > 0 || len(c.tv.IP) > 0) &&
+					!reflect.DeepEqual(got.IP, c.tv.IP) {
+					t.Errorf("Mismatch IP got %v, want %v", got.IP, c.tv.IP)
+				}
+
+				if (len(got.Values) > 0 || len(c.tv.Values) > 0) &&
+					!reflect.DeepEqual(got.Values, c.tv.Values) {
+					t.Errorf("Mismatch Values got %v, want %v", got.Values, c.tv.Values)
+				}
+
+				cookie, err := incorr.NewCookieFromValues(c.tv)
+				if err != nil {
+					t.Error("NewCookie()", err)
+					return
+				}
+
+				err = cookie.Valid()
+				if err != nil {
+					if cookie.Expires.IsZero() {
+						// https://github.com/golang/go/issues/52989
+						if err.Error() == "http: invalid Cookie.Expires" {
+							return
+						}
+						t.Fatal("The workaround about 'invalid Cookie.Expires' must be reviewed:", err)
+					}
+					t.Error("Invalid cookie:", err)
+				}
+			})
+		}
 	}
 }
 
