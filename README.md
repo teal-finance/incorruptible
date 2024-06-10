@@ -15,7 +15,7 @@ See the [origin of the name](#🍸-name).
 [r]: https://goreportcard.com/report/github.com/teal-finance/incorruptible
 [t]: https://www.rfc-editor.org/rfc/rfc6750.html
 [c]: https://www.shakeitdrinkit.com/incorruptible-cocktail-1618.html
-[m]: https://wikiless.org/wiki/Mocktail "Incorruptible is also a Mocktail: a cocktail without alcohol"
+[m]: https://en.wikipedia.org/wiki/Mocktail "Incorruptible is also a Mocktail: a cocktail without alcohol"
 [w]: https://en.wiktionary.org/wiki/garçon_de_café
 
 ![logo](docs/incorruptible.png)

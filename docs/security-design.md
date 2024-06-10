@@ -3,7 +3,7 @@
 The Incorruptible package provides a Cipher
 with simple and safe functions `Encrypt()` and `Decrypt()` for
 AEAD (Authenticated Encryption with Associated Data).  
-See <https://wikiless.org/wiki/Authenticated_encryption>.
+See <https://en.wikipedia.org/wiki/Authenticated_encryption>.
 
 ## Inspiration
 

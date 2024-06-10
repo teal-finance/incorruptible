@@ -36,7 +36,7 @@ func NewCipher(secretKey []byte) cipher.AEAD {
 // for AEAD (Authenticated Encryption with Associated Data).
 //
 // Implementation is based on:
-// - https://wikiless.org/wiki/Authenticated_encryption
+// - https://en.wikipedia.org/wiki/Authenticated_encryption
 // - https://go.dev/blog/tls-cipher-suites
 // - https://github.com/gtank/cryptopasta
 //
