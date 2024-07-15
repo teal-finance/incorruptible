@@ -25,9 +25,9 @@ func NewCipher(secretKey []byte) cipher.AEAD {
 	case 32:
 		return NewChaCipher(secretKey)
 	default:
-		log.Panic("Unexpected secretKey length: ", len(secretKey), " bytes."+
+		log.Panic("Unexpected secretKey length: ", len(secretKey), " bytes. "+
 			"Accept 16 bytes (128-bit AES key) "+
-			" or 32 bytes (256-bit ChaCha20-Poly1305 key).")
+			"or 32 bytes (256-bit ChaCha20-Poly1305 key).")
 		return nil
 	}
 }
