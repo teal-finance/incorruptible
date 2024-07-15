@@ -2,6 +2,8 @@ github.com/acmacalister/skittles v0.0.0-20160609003031-7423546701e1 h1:RKnVV4C7q
 github.com/acmacalister/skittles v0.0.0-20160609003031-7423546701e1/go.mod h1:gI5CyA/CEnS6eqNV22rqs4dG3aGfaSbXgPORIlwr2r0=
 github.com/klauspost/compress v1.17.8 h1:YcnTYrq7MikUT7k0Yb5eceMmALQPYBW/Xltxn0NAMnU=
 github.com/klauspost/compress v1.17.8/go.mod h1:Di0epgTjJY877eYKx5yC51cX2A2Vl2ibi7bDH9ttBbw=
+github.com/klauspost/compress v1.17.9 h1:6KIumPrER1LHsvBVuDa0r5xaG0Es51mhhB9BQB2qeMA=
+github.com/klauspost/compress v1.17.9/go.mod h1:Di0epgTjJY877eYKx5yC51cX2A2Vl2ibi7bDH9ttBbw=
 github.com/mtraver/base91 v1.0.0 h1:vkIW96Xbw7QH1fbSV5VwXqv+xVuWWZji4O4ty8yYk28=
 github.com/mtraver/base91 v1.0.0/go.mod h1:Igwspit339nKvBhXGqrNOaNI8qGvh+Y4P76q5g4qH2Y=
 github.com/teal-finance/emo v0.0.0-20240312162720-10aac528c0d2 h1:xTJox96uga7lBdF7GUToVLczeI50pVnZS6iOQZ7ok0g=
@@ -10,5 +12,9 @@ github.com/teal-finance/emo v0.0.0-20240610104517-58d37361ce25 h1:cM0GBOjwQk2eUS
 github.com/teal-finance/emo v0.0.0-20240610104517-58d37361ce25/go.mod h1:6aa5RWyun5X03M9sWOX0bZnOI9+UV21Tc8l2aeWJaDw=
 golang.org/x/crypto v0.24.0 h1:mnl8DM0o513X8fdIkmyFE/5hTYxbwYOjDS/+rK6qpRI=
 golang.org/x/crypto v0.24.0/go.mod h1:Z1PMYSOR5nyMcyAVAIQSKCDwalqy85Aqn1x3Ws4L5DM=
+golang.org/x/crypto v0.25.0 h1:ypSNr+bnYL2YhwoMt2zPxHFmbAN1KZs/njMG3hxUp30=
+golang.org/x/crypto v0.25.0/go.mod h1:T+wALwcMOSE0kXgUAnPAHqTLW+XHgcELELW8VaDgm/M=
 golang.org/x/sys v0.21.0 h1:rF+pYz3DAGSQAxAu1CbC7catZg4ebC4UIeIhKxBZvws=
 golang.org/x/sys v0.21.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+golang.org/x/sys v0.22.0 h1:RI27ohtqKCnwULzJLqkv897zojh5/DwS/ENaMzUOaWI=
+golang.org/x/sys v0.22.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
